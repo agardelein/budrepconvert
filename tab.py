@@ -10,34 +10,39 @@ class BaseView:
     HEADER = []
     DATA_START_COLUMN = None
     INITIAL_CHAPTER_NAME_COLUMN = None
+    TABLE_NUMBER = None
 
     def __init__(self, filename, page, rel_area=None):
         self.data = None
         self.read_data(filename, page, rel_area)
+        self.process_header()
         self.merge_nan_lines()
         self.remove_notes_from_chapter_names()
-        self.specfic_process_data()
+        self.specific_process_data()
         self.convert_data()
-        self.set_header()
 
     def read_data(self, filename, page, rel_area=None):
         str_area = [f"{i*100:.3f}" for i in rel_area]
-        print(str_area)
         df = tabula.read_pdf(filename,
                              pages=page,
-                             area=str_area,
+                             stream=True,
+                             #area=str_area,
                              relative_area=True,
                              pandas_options={'header': None},
                              )
-        self.data = df[0]
+        self.data = df[self.TABLE_NUMBER]
 
+    def process_header(self):
+        raise NotImplementedError
+        
     def merge_nan_lines(self):
         drop_list = []
         for i, line in self.data.iterrows():
             if self.is_nan_line(line):
+                print('<' + line.iloc[1] + '>')
                 self.merge_with_previous_line(i)
                 drop_list.append(line.name)
-        self.data.drop(drop_list, inplace=True)
+        self.data.drop(drop_list, inplace=True)        
 
     def is_nan_line(self, line):
         a = line.iloc[self.DATA_START_COLUMN:].dropna()
@@ -47,6 +52,7 @@ class BaseView:
         col = self.INITIAL_CHAPTER_NAME_COLUMN
         part1 = self.data.iloc[num - 1, col].strip()
         part2 = self.data.iloc[num, col].strip()
+        print(f'<{part1}>, <{part2}>')
         self.data.iloc[num - 1, col] = part1 + " " + part2
         
     def remove_notes_from_chapter_names(self):
@@ -69,7 +75,11 @@ class BaseView:
                 return s
             else:
                 rep = s.replace(' ', '').replace(',', '.')
-                return float(rep)
+                try:
+                    return float(rep)
+                except ValueError:
+                    return s
+
         dataset = self.data.iloc[:, self.DATA_START_COLUMN:]
         self.data.iloc[:,self.DATA_START_COLUMN:] = dataset.map(fun)
 
@@ -82,23 +92,45 @@ class BaseBalanceGenerale(BaseView):
     DATA_START_COLUMN = 2
     INITIAL_CHAPTER_NAME_COLUMN = 1
 
-    def specfic_process_data(self):
-        self.data.drop(columns=self.DROP_COLUMNS, inplace=True)
+    def process_header(self):
+        header = self.data.iloc[0, :]
+        names = {}
+        for i, h in enumerate(header):
+            if isinstance(h, str):
+                names[i] = self.remove_notes(h).title()
+            else:
+                names[i] = h
+        names[0] = "Chapitre"
+        self.data.rename(columns=names, inplace=True)
+        self.data.drop(0, inplace=True)
+        self.data.reset_index(drop=True, inplace=True)
 
 class BalanceGeneraleInvest(BaseBalanceGenerale):
     HEADER = ['Chapitre', 'Investissement', 'Opérations Réelles', 'Opérations d\'ordre', 'Total']
-    DROP_COLUMNS = [2]
+    TABLE_NUMBER = 1
+
+    def specific_process_data(self):
+        print(self.data)
+        self.data.drop(columns=[np.nan], inplace=True)
+
 
 class BalanceGeneraleFonct(BaseBalanceGenerale):
     HEADER = ['Chapitre', 'Fonctionnement', 'Opérations Réelles', 'Opérations d\'ordre', 'Total']
+    TABLE_NUMBER = 2
+
+    def specific_process_data(self):
+        pass
 
 class BaseVueEnsemble(BaseView):
     DATA_START_COLUMN = 3
     INITIAL_CHAPTER_NAME_COLUMN = 0
     DROP_COLUMNS = [1]
 
-    def specfic_process_data(self):
-        self.data.drop(columns=self.DROP_COLUMNS, inplace=True)
+    def process_header(self):
+        pass
+
+    def specific_process_data(self):
+        self.data.drop(columns=[np.nan], inplace=True)
         self.extract_chapter_numbers()
 
     def extract_chapter_numbers(self):
@@ -143,35 +175,29 @@ class VueEnsembleDepensesInvest(BaseVueEnsemble):
               'Total (RAR N-1 + Vote)',
               ]
     
-area = [35/280, 13/197, 132/280, 183/197]
-bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf',
-                              17,
-                              rel_area=area)
+bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17)
 
-area = [165/280, 13/197, 220/280, 183/197]
-bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf',
-                              17,
-                              rel_area=area)
+bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17)
 
-area = [35/280, 13/197, 132/280, 183/197]
-bgri = BalanceGeneraleInvest('BP_2025_ville.pdf',
-                              19,
-                              rel_area=area)
-area = [179/280, 13/197, 245/280, 183/197]
-bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf',
-                              19,
-                              rel_area=area)
+#area = [35/280, 13/197, 132/280, 183/197]
+#bgri = BalanceGeneraleInvest('BP_2025_ville.pdf',
+#                              19,
+#                              rel_area=area)
+#area = [179/280, 13/197, 245/280, 183/197]
+#bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf',
+#                              19,
+#                              rel_area=area)
 
-area = [56/210, 16/297, 155/210, 282/297]
-vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf',
-                                 21,
-                                 rel_area=area)
+#area = [56/210, 16/297, 155/210, 282/297]
+#vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf',
+#                                 21,
+#                                 rel_area=area)
 
-area = [56/210, 16/297, 155/210, 282/297]
+#area = [56/210, 16/297, 155/210, 282/297]
 
 print('-'*50, 'Done')
 print(bgdi.data)
 print(bgdf.data)
-print(bgri.data)
-print(bgrf.data)
-print(vedi.data)
+#print(bgri.data)
+#print(bgrf.data)
+#print(vedi.data)
