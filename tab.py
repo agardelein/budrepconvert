@@ -26,7 +26,6 @@ class BaseView:
         df = tabula.read_pdf(filename,
                              pages=page,
                              stream=True,
-                             #area=str_area,
                              relative_area=True,
                              pandas_options={'header': None},
                              )
@@ -88,7 +87,6 @@ class BaseView:
         self.data.rename(columns=names, inplace=True)
 
 class BaseBalanceGenerale(BaseView):
-    DROP_COLUMNS = []
     DATA_START_COLUMN = 2
     INITIAL_CHAPTER_NAME_COLUMN = 1
 
@@ -105,8 +103,8 @@ class BaseBalanceGenerale(BaseView):
         self.data.drop(0, inplace=True)
         self.data.reset_index(drop=True, inplace=True)
 
+
 class BalanceGeneraleInvest(BaseBalanceGenerale):
-    HEADER = ['Chapitre', 'Investissement', 'Opérations Réelles', 'Opérations d\'ordre', 'Total']
     TABLE_NUMBER = 1
 
     def specific_process_data(self):
@@ -115,11 +113,11 @@ class BalanceGeneraleInvest(BaseBalanceGenerale):
 
 
 class BalanceGeneraleFonct(BaseBalanceGenerale):
-    HEADER = ['Chapitre', 'Fonctionnement', 'Opérations Réelles', 'Opérations d\'ordre', 'Total']
     TABLE_NUMBER = 2
 
     def specific_process_data(self):
         pass
+
 
 class BaseVueEnsemble(BaseView):
     DATA_START_COLUMN = 3
@@ -127,6 +125,7 @@ class BaseVueEnsemble(BaseView):
     DROP_COLUMNS = [1]
 
     def process_header(self):
+        print(self.data)
         pass
 
     def specific_process_data(self):
@@ -179,10 +178,11 @@ bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17)
 
 bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17)
 
-#area = [35/280, 13/197, 132/280, 183/197]
-#bgri = BalanceGeneraleInvest('BP_2025_ville.pdf',
-#                              19,
-#                              rel_area=area)
+area = [35/280, 13/197, 132/280, 183/197]
+bgri = BalanceGeneraleInvest('BP_2025_ville.pdf',
+                              19,
+                              rel_area=area)
+
 #area = [179/280, 13/197, 245/280, 183/197]
 #bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf',
 #                              19,
@@ -198,6 +198,6 @@ bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17)
 print('-'*50, 'Done')
 print(bgdi.data)
 print(bgdf.data)
-#print(bgri.data)
+print(bgri.data)
 #print(bgrf.data)
 #print(vedi.data)
