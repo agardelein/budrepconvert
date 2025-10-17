@@ -166,9 +166,16 @@ area = [56/210, 16/297, 155/210, 282/297]
 vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf',
                                  21,
                                  rel_area=area)
+
+area = [56/210, 16/297, 155/210, 282/297]
+veri = VueEnsembleDepensesInvest('BP_2025_ville.pdf',
+                                 23,
+                                 rel_area=area)
+
 print('-'*50, 'Done')
 print(bgdi.data)
 print(bgdf.data)
 print(bgri.data)
 print(bgrf.data)
 print(vedi.data)
+print(veri.data)
