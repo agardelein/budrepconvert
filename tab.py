@@ -22,11 +22,9 @@ class BaseView:
         self.convert_data()
 
     def read_data(self, filename, page, rel_area=None):
-        str_area = [f"{i*100:.3f}" for i in rel_area]
         df = tabula.read_pdf(filename,
                              pages=page,
                              stream=True,
-                             relative_area=True,
                              pandas_options={'header': None},
                              )
         self.data = df[self.TABLE_NUMBER]
@@ -38,7 +36,6 @@ class BaseView:
         drop_list = []
         for i, line in self.data.iterrows():
             if self.is_nan_line(line):
-                print('<' + line.iloc[1] + '>')
                 self.merge_with_previous_line(i)
                 drop_list.append(line.name)
         self.data.drop(drop_list, inplace=True)        
@@ -51,7 +48,6 @@ class BaseView:
         col = self.INITIAL_CHAPTER_NAME_COLUMN
         part1 = self.data.iloc[num - 1, col].strip()
         part2 = self.data.iloc[num, col].strip()
-        print(f'<{part1}>, <{part2}>')
         self.data.iloc[num - 1, col] = part1 + " " + part2
         
     def remove_notes_from_chapter_names(self):
@@ -108,7 +104,6 @@ class BalanceGeneraleInvest(BaseBalanceGenerale):
     TABLE_NUMBER = 1
 
     def specific_process_data(self):
-        print(self.data)
         self.data.drop(columns=[np.nan], inplace=True)
 
 
@@ -121,16 +116,30 @@ class BalanceGeneraleFonct(BaseBalanceGenerale):
 
 class BaseVueEnsemble(BaseView):
     DATA_START_COLUMN = 3
-    INITIAL_CHAPTER_NAME_COLUMN = 0
+    INITIAL_CHAPTER_NAME_COLUMN = 1
+    LAST_HEADER_LINE = 4
     DROP_COLUMNS = [1]
+    TABLE_NUMBER = 1
 
     def process_header(self):
-        print(self.data)
-        pass
+        names = {}
+        for i, col in self.data.items():
+            s = ' '.join(self.merge_header_cells(col)).title()
+            names[i] = self.remove_notes(s)
+        names[0] = 'Chapitre'
+        names[1] = 'Titre Chapitre'
+        names[2] = np.nan
+        self.data.rename(columns=names, inplace=True)
+        self.data.drop(list(range(self.LAST_HEADER_LINE + 1)),
+                       inplace=True)
+        self.data.reset_index(drop=True, inplace=True)
 
+    def merge_header_cells(self, cells):
+        return cells[:self.LAST_HEADER_LINE+ 1 ].dropna()
+    
     def specific_process_data(self):
         self.data.drop(columns=[np.nan], inplace=True)
-        self.extract_chapter_numbers()
+        self.data.loc[0, 'Chapitre'] = 'Total'
 
     def extract_chapter_numbers(self):
         nums= pd.Series([np.nan for x in range(self.data[0].size)])
@@ -178,26 +187,18 @@ bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17)
 
 bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17)
 
-area = [35/280, 13/197, 132/280, 183/197]
-bgri = BalanceGeneraleInvest('BP_2025_ville.pdf',
-                              19,
-                              rel_area=area)
+bgri = BalanceGeneraleInvest('BP_2025_ville.pdf', 19)
 
-#area = [179/280, 13/197, 245/280, 183/197]
-#bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf',
-#                              19,
-#                              rel_area=area)
+bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf', 19)
 
-#area = [56/210, 16/297, 155/210, 282/297]
-#vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf',
-#                                 21,
-#                                 rel_area=area)
+vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 21)
 
-#area = [56/210, 16/297, 155/210, 282/297]
+veri = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 23)
 
 print('-'*50, 'Done')
 print(bgdi.data)
 print(bgdf.data)
 print(bgri.data)
-#print(bgrf.data)
-#print(vedi.data)
+print(bgrf.data)
+print(vedi.data)
+print(veri.data)
