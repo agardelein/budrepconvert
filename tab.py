@@ -16,6 +16,7 @@ class BaseView:
         self.process_header()
         self.merge_nan_lines()
         self.remove_notes_from_chapter_names()
+        self.delete_useless_columns()
         self.specific_process_data()
         self.convert_data()
 
@@ -59,8 +60,15 @@ class BaseView:
         else:
             return re.sub(r'\(\d+\)', '', s).strip()
 
+    def delete_useless_columns(self):
+        if np.nan in self.data.columns:
+            self.data.drop(columns=[np.nan], inplace=True)
+
     def process_data(self):
         raise NotImplementedError
+
+    def specific_process_data(self):
+        pass
     
     def convert_data(self):
         def fun(s):
@@ -80,7 +88,7 @@ class BaseView:
         names = dict(zip(list(self.data.columns), self.HEADER))
         self.data.rename(columns=names, inplace=True)
 
-class BaseBalanceGenerale(BaseView):
+class BalanceGenerale(BaseView):
     DATA_START_COLUMN = 2
     INITIAL_CHAPTER_NAME_COLUMN = 1
 
@@ -98,26 +106,11 @@ class BaseBalanceGenerale(BaseView):
         self.data.reset_index(drop=True, inplace=True)
 
 
-class BalanceGeneraleInvest(BaseBalanceGenerale):
-    TABLE_NUMBER = 1
-
-    def specific_process_data(self):
-        self.data.drop(columns=[np.nan], inplace=True)
-
-
-class BalanceGeneraleFonct(BaseBalanceGenerale):
-    TABLE_NUMBER = 2
-
-    def specific_process_data(self):
-        pass
-
-
-class BaseVueEnsemble(BaseView):
+class VueEnsembleDepenses(BaseView):
     DATA_START_COLUMN = 3
     INITIAL_CHAPTER_NAME_COLUMN = 1
     LAST_HEADER_LINE = 4
     DROP_COLUMNS = [1]
-    TABLE_NUMBER = 1
 
     def process_header(self):
         names = {}
@@ -136,7 +129,6 @@ class BaseVueEnsemble(BaseView):
         return cells[:self.LAST_HEADER_LINE+ 1 ].dropna()
     
     def specific_process_data(self):
-        self.data.drop(columns=[np.nan], inplace=True)
         self.data.loc[0, 'Chapitre'] = 'Total'
 
     def extract_chapter_numbers(self):
@@ -167,21 +159,13 @@ class BaseVueEnsemble(BaseView):
         if not isinstance(s, str):
             return s
         return re.sub(r'^(\d+)', '', s)
-    
-class VueEnsembleDepensesInvest(BaseVueEnsemble):
-    pass
-    
-bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17, 1)
-
-bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17, 2)
-
-bgri = BalanceGeneraleInvest('BP_2025_ville.pdf', 19, 1)
-
-bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf', 19, 2)
-
-vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 21, 1)
-
-veri = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 23, 1)
+        
+bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
+bgdf = BalanceGenerale('BP_2025_ville.pdf', 17, 2)
+bgri = BalanceGenerale('BP_2025_ville.pdf', 19, 1)
+bgrf = BalanceGenerale('BP_2025_ville.pdf', 19, 2)
+vedi = VueEnsembleDepenses('BP_2025_ville.pdf', 21, 1)
+veri = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1)
 
 print('-'*50, 'Done')
 print(bgdi.data)
