@@ -7,27 +7,25 @@ import numpy as np
 import pandas as pd
 
 class BaseView:
-    HEADER = []
     DATA_START_COLUMN = None
     INITIAL_CHAPTER_NAME_COLUMN = None
-    TABLE_NUMBER = None
 
-    def __init__(self, filename, page, rel_area=None):
+    def __init__(self, filename, page, table_number):
         self.data = None
-        self.read_data(filename, page, rel_area)
+        self.read_data(filename, page, table_number)
         self.process_header()
         self.merge_nan_lines()
         self.remove_notes_from_chapter_names()
         self.specific_process_data()
         self.convert_data()
 
-    def read_data(self, filename, page, rel_area=None):
+    def read_data(self, filename, page, table_number):
         df = tabula.read_pdf(filename,
                              pages=page,
                              stream=True,
                              pandas_options={'header': None},
                              )
-        self.data = df[self.TABLE_NUMBER]
+        self.data = df[table_number]
 
     def process_header(self):
         raise NotImplementedError
@@ -171,29 +169,19 @@ class BaseVueEnsemble(BaseView):
         return re.sub(r'^(\d+)', '', s)
     
 class VueEnsembleDepensesInvest(BaseVueEnsemble):
-    HEADER = ['Chapitre',
-              'Intitulé Chapitre',
-              'Pour mémoire budget précédent',
-              'RAR N-1',
-              'Vote de l\'assemblée sur les AP lors de la séance budgétaire',
-              'Proposition nouvelles',
-              'Vote de l\'assemblée',
-              'Pour information, dépenses gérées dans le cadre d\'une AP',
-              'Pour information, dépenses gérées hors AP',
-              'Total (RAR N-1 + Vote)',
-              ]
+    pass
     
-bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17)
+bgdi = BalanceGeneraleInvest('BP_2025_ville.pdf', 17, 1)
 
-bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17)
+bgdf = BalanceGeneraleFonct('BP_2025_ville.pdf', 17, 2)
 
-bgri = BalanceGeneraleInvest('BP_2025_ville.pdf', 19)
+bgri = BalanceGeneraleInvest('BP_2025_ville.pdf', 19, 1)
 
-bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf', 19)
+bgrf = BalanceGeneraleFonct('BP_2025_ville.pdf', 19, 2)
 
-vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 21)
+vedi = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 21, 1)
 
-veri = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 23)
+veri = VueEnsembleDepensesInvest('BP_2025_ville.pdf', 23, 1)
 
 print('-'*50, 'Done')
 print(bgdi.data)
