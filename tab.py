@@ -12,6 +12,7 @@ WRITE_FILES = False
 class BaseView:
     DATA_START_COLUMN = None
     INITIAL_CHAPTER_NAME_COLUMN = None
+    LAST_HEADER_LINE = None
 
     def __init__(self, filename, page, table_number):
         self.data = None
@@ -159,11 +160,14 @@ class VueEnsembleDepenses(BaseView):
             return s
         return re.sub(r'^(\d+)', '', s)
 
-class DetailArticle(BaseView):
+class DetailParArticle(BaseView):
+    DATA_START_COLUMN = 2
+    INITIAL_CHAPTER_NAME_COLUMN = 1
+    LAST_HEADER_LINE = 4
 
     def fix_labels(self, names):
-        print(self.data)
-        return None
+        names[0] = 'Chapitre'
+        return names
 
 if WRITE_FILES:
     bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
@@ -178,11 +182,13 @@ if WRITE_FILES:
     vedi.data.to_csv('vedi.csv', float_format='%.2f', index=False)
     veri = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1)
     veri.data.to_csv('veri.csv', float_format='%.2f', index=False)
+    dadi1 = DetailParArticle('BP_2025_ville.pdf', 25, 1)
+    dadi1.data.to_csv('dadi1.csv', float_format='%.2f', index=False)
+    dadi2 = DetailParArticle('BP_2025_ville.pdf', 26, 0)
+    dadi2.data.to_csv('dadi2.csv', float_format='%.2f', index=False)
 
-#dadi = DetailArticle('BP_2025_ville.pdf', 25, 1)
 
 print('-'*50, 'Done')
-#print(dadi.data)
 
 class test_bg(unittest.TestCase):
 
@@ -227,6 +233,14 @@ class test_bg(unittest.TestCase):
     def test_vue_ensemble_recettes(self):
         act = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1).data
         ref = pd.read_csv('veri-reference.csv')
+        self._test_equals(act, ref)
+
+    def test_detail_par_article(self):
+        act = DetailParArticle('BP_2025_ville.pdf', 25, 1).data
+        ref = pd.read_csv('dadi1-reference.csv')
+        self._test_equals(act, ref)
+        act = DetailParArticle('BP_2025_ville.pdf', 26, 0).data
+        ref = pd.read_csv('dadi2-reference.csv')
         self._test_equals(act, ref)
         
 if __name__ == '__main__':
