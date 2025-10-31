@@ -5,6 +5,7 @@ import locale
 import tabula
 import numpy as np
 import pandas as pd
+import unittest
 
 class BaseView:
     DATA_START_COLUMN = None
@@ -29,6 +30,12 @@ class BaseView:
         self.data = df[table_number]
 
     def process_header(self):
+        names, drop_list = self._process_header()
+        self.data.rename(columns=names, inplace=True)
+        self.data.drop(drop_list, inplace=True)
+        self.data.reset_index(drop=True, inplace=True)
+        
+    def _process_header(self):
         raise NotImplementedError
         
     def merge_nan_lines(self):
@@ -38,6 +45,7 @@ class BaseView:
                 self.merge_with_previous_line(i)
                 drop_list.append(line.name)
         self.data.drop(drop_list, inplace=True)        
+        self.data.reset_index(drop=True, inplace=True)
 
     def is_nan_line(self, line):
         a = line.iloc[self.DATA_START_COLUMN:].dropna()
@@ -83,6 +91,7 @@ class BaseView:
 
         dataset = self.data.iloc[:, self.DATA_START_COLUMN:]
         self.data.iloc[:,self.DATA_START_COLUMN:] = dataset.map(fun)
+        self.data = self.data.convert_dtypes(convert_integer=False)
 
     def set_header(self):
         names = dict(zip(list(self.data.columns), self.HEADER))
@@ -92,7 +101,7 @@ class BalanceGenerale(BaseView):
     DATA_START_COLUMN = 2
     INITIAL_CHAPTER_NAME_COLUMN = 1
 
-    def process_header(self):
+    def _process_header(self):
         header = self.data.iloc[0, :]
         names = {}
         for i, h in enumerate(header):
@@ -101,9 +110,8 @@ class BalanceGenerale(BaseView):
             else:
                 names[i] = h
         names[0] = "Chapitre"
-        self.data.rename(columns=names, inplace=True)
-        self.data.drop(0, inplace=True)
-        self.data.reset_index(drop=True, inplace=True)
+        drop_list = 0
+        return names, drop_list
 
 
 class VueEnsembleDepenses(BaseView):
@@ -112,7 +120,7 @@ class VueEnsembleDepenses(BaseView):
     LAST_HEADER_LINE = 4
     DROP_COLUMNS = [1]
 
-    def process_header(self):
+    def _process_header(self):
         names = {}
         for i, col in self.data.items():
             s = ' '.join(self.merge_header_cells(col)).title()
@@ -120,13 +128,11 @@ class VueEnsembleDepenses(BaseView):
         names[0] = 'Chapitre'
         names[1] = 'Titre Chapitre'
         names[2] = np.nan
-        self.data.rename(columns=names, inplace=True)
-        self.data.drop(list(range(self.LAST_HEADER_LINE + 1)),
-                       inplace=True)
-        self.data.reset_index(drop=True, inplace=True)
+        drop_list = list(range(self.LAST_HEADER_LINE + 1))
+        return names, drop_list
 
     def merge_header_cells(self, cells):
-        return cells[:self.LAST_HEADER_LINE+ 1 ].dropna()
+        return cells[:self.LAST_HEADER_LINE+ 1].dropna()
     
     def specific_process_data(self):
         self.data.loc[0, 'Chapitre'] = 'Total'
@@ -159,18 +165,69 @@ class VueEnsembleDepenses(BaseView):
         if not isinstance(s, str):
             return s
         return re.sub(r'^(\d+)', '', s)
-        
+
+class DetailArticle(BaseView):
+
+    def _process_header(self):
+        print(self.data)
+        return None, None
+    
 bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
+bgdi.data.to_csv('bgdi.csv', float_format='%.2f', index=False)
 bgdf = BalanceGenerale('BP_2025_ville.pdf', 17, 2)
+bgdf.data.to_csv('bgdf.csv', float_format='%.2f', index=False)
 bgri = BalanceGenerale('BP_2025_ville.pdf', 19, 1)
+bgri.data.to_csv('bgri.csv', float_format='%.2f', index=False)
 bgrf = BalanceGenerale('BP_2025_ville.pdf', 19, 2)
+bgrf.data.to_csv('bgrf.csv', float_format='%.2f', index=False)
 vedi = VueEnsembleDepenses('BP_2025_ville.pdf', 21, 1)
+vedi.data.to_csv('vedi.csv', float_format='%.2f', index=False)
 veri = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1)
+veri.data.to_csv('veri.csv', float_format='%.2f', index=False)
+#dadi = DetailArticle('BP_2025_ville.pdf', 25, 1)
 
 print('-'*50, 'Done')
-print(bgdi.data)
-print(bgdf.data)
-print(bgri.data)
-print(bgrf.data)
-print(vedi.data)
-print(veri.data)
+#print(dadi.data)
+
+class test_bg(unittest.TestCase):
+
+    def convert_data(self, data):
+        return data.convert_dtypes(convert_integer=False)
+
+    def _test_equals(self, act, ref):
+        actual = self.convert_data(act)        
+        reference = self.convert_data(ref)
+        return self.assertTrue(actual.equals(reference))
+    
+    def test_balance_generale_depenses_invest(self):
+        act = BalanceGenerale('BP_2025_ville.pdf', 17, 1).data
+        ref = pd.read_csv('bgdi-reference.csv')
+        self._test_equals(act, ref)
+
+    def test_balance_generale_depenses_fonct(self):
+        act = BalanceGenerale('BP_2025_ville.pdf', 17, 2).data
+        ref = pd.read_csv('bgdf-reference.csv')
+        self._test_equals(act, ref)
+
+    def test_balance_generale_recettes_invest(self):
+        act = BalanceGenerale('BP_2025_ville.pdf', 19, 1).data
+        ref = pd.read_csv('bgri-reference.csv')
+        self._test_equals(act, ref)
+
+    def test_balance_generale_recettes_fonct(self):
+        act = BalanceGenerale('BP_2025_ville.pdf', 19, 2).data
+        ref = pd.read_csv('bgrf-reference.csv')
+        self._test_equals(act, ref)
+
+    def test_vue_ensemble_depenses(self):
+        act = VueEnsembleDepenses('BP_2025_ville.pdf', 21, 1).data
+        ref = pd.read_csv('vedi-reference.csv')
+        self._test_equals(act, ref)
+        
+    def test_vue_ensemble_recettes(self):
+        act = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1).data
+        ref = pd.read_csv('veri-reference.csv')
+        self._test_equals(act, ref)
+        
+if __name__ == '__main__':
+    unittest.main()
