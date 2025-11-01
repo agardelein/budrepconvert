@@ -14,8 +14,20 @@ class BaseView:
     INITIAL_CHAPTER_NAME_COLUMN = None
     LAST_HEADER_LINE = None
 
-    def __init__(self, filename, page, table_number, axis=0):
+    def __init__(self, filename, page, table_number, axis=0,
+                 header_lines=None,
+                 labels_to_fix=None,
+                 data_to_fix=None):
         self.data = None
+        if header_lines is None:
+            self.header_lines = self.LAST_HEADER_LINE + 1
+        else:
+            self.header_lines = header_lines
+        if data_to_fix is None:
+            self.data_to_fix = {}
+        else:
+            self.data_to_fix = data_to_fix
+        self.labels_to_fix = labels_to_fix
         if isinstance(page, int) and isinstance(table_number, int):
             self.read_singlepage_table(filename, page, table_number)
         else:
@@ -27,7 +39,7 @@ class BaseView:
         self.merge_multilines_cells()
         self.remove_notes_from_chapter_names()
         self.delete_useless_columns()
-        self.specific_process_data()
+        self.fix_data()
         self.convert_first_col_to_string()
         self.convert_data()
 
@@ -52,7 +64,7 @@ class BaseView:
         self.data = df[table_number]
 
     def convert_header_to_labels(self):
-        drop_list = list(range(self.LAST_HEADER_LINE + 1))
+        drop_list = list(range(self.header_lines))
         names = {}
         for i, col in self.data.items():
             s = ' '.join(self.merge_header_cells(col)).title()
@@ -62,11 +74,13 @@ class BaseView:
         self.data.drop(drop_list, inplace=True)
         self.data.reset_index(drop=True, inplace=True)
 
-    def fix_labels(self):
-        raise NotImplementedError
+    def fix_labels(self, names):
+        for i, label in self.labels_to_fix.items():
+            names[i] = label
+        return names
 
     def merge_header_cells(self, cells):
-        return cells[:self.LAST_HEADER_LINE+ 1].dropna().astype(str)
+        return cells[:self.header_lines].dropna().astype(str)
     
     def merge_multilines_cells(self):
         drop_list = []
@@ -102,8 +116,9 @@ class BaseView:
         if np.nan in self.data.columns:
             self.data.drop(columns=[np.nan], inplace=True)
 
-    def specific_process_data(self):
-        pass
+    def fix_data(self):
+        for k, v in self.data_to_fix.items():
+            self.data.loc[k] = v
     
     def convert_data(self):
         def fun(s):
@@ -138,7 +153,6 @@ class VueEnsembleDepenses(BaseView):
     DATA_START_COLUMN = 3
     INITIAL_CHAPTER_NAME_COLUMN = 1
     LAST_HEADER_LINE = 4
-    DROP_COLUMNS = [1]
 
     def fix_labels(self, names):
         names[0] = 'Chapitre'
@@ -146,7 +160,7 @@ class VueEnsembleDepenses(BaseView):
         names[2] = np.nan
         return names
 
-    def specific_process_data(self):
+    def fix_data(self):
         self.data.loc[0, 'Chapitre'] = 'Total'
 
 
@@ -154,10 +168,6 @@ class DetailParArticle(BaseView):
     DATA_START_COLUMN = 2
     INITIAL_CHAPTER_NAME_COLUMN = 1
     LAST_HEADER_LINE = 4
-
-    def fix_labels(self, names):
-        names[0] = 'Chapitre'
-        return names
 
 if WRITE_REFERENCE_FILES:
     bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
@@ -176,11 +186,21 @@ if WRITE_REFERENCE_FILES:
     dadi1.data.to_csv('dadi1.csv', float_format='%.2f', index=False)
     dadi2 = DetailParArticle('BP_2025_ville.pdf', 26, 0)
     dadi2.data.to_csv('dadi2.csv', float_format='%.2f', index=False)
-    dadi = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1)
+    dadi = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1,
+                            labels_to_fix={0: 'Chapitre'},
+                            header_lines=5)
     dadi.data.to_csv('dadi.csv', float_format='%.2f', index=False)
 
+dari = DetailParArticle('BP_2025_ville.pdf', [31, 32], 1,
+                        header_lines=4,
+                        labels_to_fix={0: 'Chapitre',
+                                       1: 'Chap. / Art.',
+                                       2: np.nan},
+                        data_to_fix = {(0, 'Chapitre'): 'Total'})
+print(dari.data)
+    
 print('-'*50, 'Done')
-#print(dadi.data.infer_objects())
+
 class test_bg(unittest.TestCase):
 
     def convert_data(self, data):
@@ -228,7 +248,11 @@ class test_bg(unittest.TestCase):
         self._test_equals(act, ref)
 
     def test_detail_par_article(self):
-        act = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1).data
+        act = DetailParArticle('BP_2025_ville.pdf', [25, 26],
+                               1,
+                               labels_to_fix={0: 'Chapitre'},
+                               header_lines=5,
+                               ).data
         ref = pd.read_csv('dadi-reference.csv')
         self._test_equals(act, ref)
         
