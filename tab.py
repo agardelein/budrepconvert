@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import unittest
 
-WRITE_FILES = False
+WRITE_REFERENCE_FILES = False
 
 class BaseView:
     DATA_START_COLUMN = None
@@ -18,7 +18,7 @@ class BaseView:
         self.data = None
         self.read_data(filename, page, table_number)
         self.convert_header_to_labels()
-        self.merge_nan_lines()
+        self.merge_multilines_cells()
         self.remove_notes_from_chapter_names()
         self.delete_useless_columns()
         self.specific_process_data()
@@ -49,16 +49,16 @@ class BaseView:
     def merge_header_cells(self, cells):
         return cells[:self.LAST_HEADER_LINE+ 1].dropna().astype(str)
     
-    def merge_nan_lines(self):
+    def merge_multilines_cells(self):
         drop_list = []
         for i, line in self.data.iterrows():
-            if self.is_nan_line(line):
+            if self.line_has_no_data(line):
                 self.merge_with_previous_line(i)
                 drop_list.append(line.name)
         self.data.drop(drop_list, inplace=True)        
         self.data.reset_index(drop=True, inplace=True)
 
-    def is_nan_line(self, line):
+    def line_has_no_data(self, line):
         a = line.iloc[self.DATA_START_COLUMN:].dropna()
         return a.empty
     
@@ -83,9 +83,6 @@ class BaseView:
         if np.nan in self.data.columns:
             self.data.drop(columns=[np.nan], inplace=True)
 
-    def process_data(self):
-        raise NotImplementedError
-
     def specific_process_data(self):
         pass
     
@@ -93,16 +90,16 @@ class BaseView:
         def fun(s):
             if not isinstance(s, str):
                 return s
-            else:
-                rep = s.replace(' ', '').replace(',', '.')
-                try:
-                    return float(rep)
-                except ValueError:
-                    return s
+            rep = s.replace(' ', '').replace(',', '.')
+            try:
+                return float(rep)
+            except ValueError:
+                return s
 
         dataset = self.data.iloc[:, self.DATA_START_COLUMN:]
         self.data.iloc[:,self.DATA_START_COLUMN:] = dataset.map(fun)
         self.data = self.data.convert_dtypes(convert_integer=False)
+
 
 class BalanceGenerale(BaseView):
     DATA_START_COLUMN = 2
@@ -131,34 +128,6 @@ class VueEnsembleDepenses(BaseView):
     def specific_process_data(self):
         self.data.loc[0, 'Chapitre'] = 'Total'
 
-    def extract_chapter_numbers(self):
-        nums= pd.Series([np.nan for x in range(self.data[0].size)])
-        names = pd.Series(["" for x in range(self.data[0].size)])
-        for i, s in enumerate(self.data[0]):
-            s = self.remove_notes(s)
-            nums[i] = self.find_chapter_number(s)
-            s = self.remove_chapter_number(s)
-            names[i] = self.find_chapter_name(s)
-        self.data.drop(0, axis=1, inplace=True)
-        self.data = pd.concat([nums, names, self.data], axis=1)
-
-    def find_chapter_number(self, s):
-        if not isinstance(s, str):
-            return s
-        m = re.match(r'^(\d+)', s)
-        if m is None:
-            return np.nan
-        return int(m.groups()[0])
-
-    def find_chapter_name(self, s):
-        if not isinstance(s, str):
-            return s
-        return s.strip()
-
-    def remove_chapter_number(self, s):
-        if not isinstance(s, str):
-            return s
-        return re.sub(r'^(\d+)', '', s)
 
 class DetailParArticle(BaseView):
     DATA_START_COLUMN = 2
@@ -169,7 +138,7 @@ class DetailParArticle(BaseView):
         names[0] = 'Chapitre'
         return names
 
-if WRITE_FILES:
+if WRITE_REFERENCE_FILES:
     bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
     bgdi.data.to_csv('bgdi.csv', float_format='%.2f', index=False)
     bgdf = BalanceGenerale('BP_2025_ville.pdf', 17, 2)
