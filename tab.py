@@ -14,15 +14,34 @@ class BaseView:
     INITIAL_CHAPTER_NAME_COLUMN = None
     LAST_HEADER_LINE = None
 
-    def __init__(self, filename, page, table_number):
+    def __init__(self, filename, page, table_number, axis=0):
         self.data = None
+        if isinstance(page, int) and isinstance(table_number, int):
+            self.read_singlepage_table(filename, page, table_number)
+        else:
+            self.read_multipage_table(filename, page, table_number, axis)
+
+    def read_singlepage_table(self, filename, page, table_number):
         self.read_data(filename, page, table_number)
         self.convert_header_to_labels()
         self.merge_multilines_cells()
         self.remove_notes_from_chapter_names()
         self.delete_useless_columns()
         self.specific_process_data()
+        self.convert_first_col_to_string()
         self.convert_data()
+
+    def read_multipage_table(self, filename, pages, table_number, axis):
+        data = None
+        for page in pages:
+            self.read_singlepage_table(filename, page, table_number)
+            if data is None:
+                data = self.data
+                table_number = 0
+            else:
+                data = pd.concat([data, self.data], axis=axis,
+                                 ignore_index=True)
+        self.data = data
 
     def read_data(self, filename, page, table_number):
         df = tabula.read_pdf(filename,
@@ -100,6 +119,8 @@ class BaseView:
         self.data.iloc[:,self.DATA_START_COLUMN:] = dataset.map(fun)
         self.data = self.data.convert_dtypes(convert_integer=False)
 
+    def convert_first_col_to_string(self):
+        self.data = self.data.astype({'Chapitre': str})
 
 class BalanceGenerale(BaseView):
     DATA_START_COLUMN = 2
@@ -155,13 +176,15 @@ if WRITE_REFERENCE_FILES:
     dadi1.data.to_csv('dadi1.csv', float_format='%.2f', index=False)
     dadi2 = DetailParArticle('BP_2025_ville.pdf', 26, 0)
     dadi2.data.to_csv('dadi2.csv', float_format='%.2f', index=False)
-
+    dadi = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1)
+    dadi.data.to_csv('dadi.csv', float_format='%.2f', index=False)
 
 print('-'*50, 'Done')
-
+#print(dadi.data.infer_objects())
 class test_bg(unittest.TestCase):
 
     def convert_data(self, data):
+        data = data.astype({'Chapitre': str})
         return data.convert_dtypes(convert_integer=False)
 
     def _test_equals(self, act, ref, show=False):
@@ -205,11 +228,8 @@ class test_bg(unittest.TestCase):
         self._test_equals(act, ref)
 
     def test_detail_par_article(self):
-        act = DetailParArticle('BP_2025_ville.pdf', 25, 1).data
-        ref = pd.read_csv('dadi1-reference.csv')
-        self._test_equals(act, ref)
-        act = DetailParArticle('BP_2025_ville.pdf', 26, 0).data
-        ref = pd.read_csv('dadi2-reference.csv')
+        act = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1).data
+        ref = pd.read_csv('dadi-reference.csv')
         self._test_equals(act, ref)
         
 if __name__ == '__main__':
