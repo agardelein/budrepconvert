@@ -23,6 +23,8 @@ class BaseView:
         self.initial_chapter_name_column = 1
         self.filename = filename
         self.axis = 0
+        self.verbose = False
+        self.chapter_number_mixed_with_name = False
         self.update_config(config)
         if isinstance(self.pages, int):
             self.read_singlepage_table(self.filename, self.pages)
@@ -45,17 +47,28 @@ class BaseView:
         self.pages = config.get('pages', self.pages)
         self.filename = config.get('filename', self.filename)
         self.axis = config.get('axis', self.axis)
+        self.verbose = config.get('verbose', self.verbose)
+        self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name', self.chapter_number_mixed_with_name)
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
         self.read_data(filename, page, self.table_number)
+        self.print_if_verbose('*-', 'After read_data')
+        
+        if self.chapter_number_mixed_with_name:
+            self.extract_chapter_numbers()
         self.convert_header_to_labels()
+        self.print_if_verbose('*/', 'After convert_header_to_labels')
+        
         self.merge_multilines_cells()
         self.remove_notes_from_chapter_names()
         self.delete_useless_columns()
         self.fix_data()
+        self.print_if_verbose('*.', 'After fix_data')
+        
         self.convert_first_col_to_string()
         self.convert_data()
+        self.print_if_verbose('*+', 'After convert_data')
 
     def read_multipage_table(self, filename, pages, axis):
         data = None
@@ -68,6 +81,7 @@ class BaseView:
                 data = pd.concat([data, self.data], axis=axis,
                                  ignore_index=True)
         self.data = data
+        self.print_if_verbose('/-', 'After concat')
 
     def read_data(self, filename, page, table_number):
         df = tabula.read_pdf(filename,
@@ -153,7 +167,44 @@ class BaseView:
 
     def convert_first_col_to_string(self):
         self.data = self.data.astype({'Chapitre': str})
+        
+    def extract_chapter_numbers(self):
+        nums= pd.Series(["" for x in range(self.data[0].size)])
+        names = pd.Series(["" for x in range(self.data[0].size)])
+        for i, s in enumerate(self.data[0]):
+            s = self.remove_notes(s)
+            nums[i] = self.find_chapter_number(s)
+            s = self.remove_chapter_number(s)
+            names[i] = self.find_chapter_name(s)
+        self.data.drop(0, axis=1, inplace=True)
+        c = self.data.columns
+        self.data.rename(columns=lambda x: x + 1, inplace=True)
+        self.data = pd.concat([nums, names, self.data], axis=1)
 
+    def find_chapter_number(self, s):
+        if not isinstance(s, str):
+            return s
+        m = re.match(r'^(\d+)', s)
+        if m is None:
+            return np.nan
+        return m.groups()[0]
+
+    def find_chapter_name(self, s):
+        if not isinstance(s, str):
+            return s
+        return s.strip()
+
+    def remove_chapter_number(self, s):
+        if not isinstance(s, str):
+            return s
+        return re.sub(r'^(\d+)', '', s)
+
+    def print_if_verbose(self, pattern='', comment=''):
+        if self.verbose:
+            print(pattern * 20, comment)
+            print(self.data)
+            print(self.data.dtypes)
+        
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
 filename = conf['general']['filename']
@@ -178,16 +229,16 @@ class test_bg(unittest.TestCase):
         data = data.astype({'Chapitre': str})
         return data.convert_dtypes(convert_integer=False)
 
-    def _test_table(self, table):
+    def _test_table(self, table, show=False):
         act = BaseView(self.filename, self.config[table]).data
         ref = pd.read_csv(table + '-reference.csv')
-        self._test_equals(act, ref)
+        self._test_equals(act, ref, show)
 
     def _test_equals(self, act, ref, show=False):
         actual = self.convert_data(act)        
         reference = self.convert_data(ref)
         if show:
-            print()
+            print('/'*40)
             print(actual)
             print(reference)
             print(actual.dtypes)
@@ -216,6 +267,8 @@ class test_bg(unittest.TestCase):
         self._test_table('dadi')
         self._test_table('dari')
        
-        
+    def test_multipage_table(self):
+        self._test_table('dadf', True)
+
 if __name__ == '__main__':
     unittest.main()

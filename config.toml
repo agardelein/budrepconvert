@@ -1,9 +1,9 @@
 [general]
 filename = 'BP_2025_ville.pdf'
-tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi']
+#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi']
 #tables = ['dadf']
-
-[dadf]
+#tables = ['bgdf']
+tables = []
 
 [bgdi]
 pages = 17
@@ -47,3 +47,11 @@ header_lines = 4
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
 32.labels_to_fix = {0 = 'Chapitre', 1 = 'Chap. / Art'}
 32.data_to_fix = []
+
+[dadf]
+#verbose = true
+pages = [36, 37, 38, 39]
+header_lines = 5
+36.labels_to_fix = {0 = 'Chapitre'}
+39.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = "nan"}
+39.chapter_number_mixed_with_name = true
