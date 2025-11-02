@@ -62,9 +62,9 @@ class BaseView:
         data = None
         for page in pages:
             self.read_singlepage_table(filename, page)
-            print('*-'*20)
-            print(self.data)
-            print('+-'*20)
+#            print('*-'*20)
+#            print(self.data)
+#            print('+-'*20)
             if data is None:
                 data = self.data
                 self.table_number = 0
@@ -170,20 +170,6 @@ class BalanceGenerale(BaseView):
         return names
 
 
-class VueEnsembleDepenses(BaseView):
-    DATA_START_COLUMN = 3
-    INITIAL_CHAPTER_NAME_COLUMN = 1
-    LAST_HEADER_LINE = 4
-
-    def fix_labels(self, names):
-        names[0] = 'Chapitre'
-        names[1] = 'Titre Chapitre'
-        names[2] = np.nan
-        return names
-
-    def fix_data(self):
-        self.data.loc[0, 'Chapitre'] = 'Total'
-
 
 class DetailParArticle(BaseView):
     DATA_START_COLUMN = 2
@@ -198,10 +184,6 @@ if WRITE_REFERENCE_FILES:
     bgri.data.to_csv('bgri.csv', float_format='%.2f', index=False)
     bgrf = BalanceGenerale('BP_2025_ville.pdf', 19, 2)
     bgrf.data.to_csv('bgrf.csv', float_format='%.2f', index=False)
-    vedi = VueEnsembleDepenses('BP_2025_ville.pdf', 21, 1)
-    vedi.data.to_csv('vedi.csv', float_format='%.2f', index=False)
-    veri = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1)
-    veri.data.to_csv('veri.csv', float_format='%.2f', index=False)
     dadi1 = DetailParArticle('BP_2025_ville.pdf', 25, 1,
                             labels_to_fix={0: 'Chapitre',
                                            3: np.nan,
@@ -218,16 +200,6 @@ if WRITE_REFERENCE_FILES:
                                            4: 'Rar N-1 I'},
                             header_lines=5)
     dadi.data.to_csv('dadi.csv', float_format='%.2f', index=False)
-    dari = DetailParArticle('BP_2025_ville.pdf', [31, 32], 1,
-                            header_lines=4,
-                            labels_to_fix={0: 'Chapitre',
-                                           1: 'Chap. / Art.',
-                                           2: np.nan,
-                                           },
-                            data_to_fix = {(0, 'Chapitre'): 'Total'})
-    #dari.data.to_csv('dari.csv', float_format='%.2f', index=False)
-
-#print(dari.data)
 
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
@@ -236,18 +208,10 @@ filename = conf['general']['filename']
 for table in conf['general']['tables']:
     ct = conf[table]
     c = BaseView(filename, config=ct)
-    print(c.data)
+    if table == 'veri':
+        print(c.data)
     if WRITE_REFERENCE_FILES:
         c.data.to_csv(table + '.csv', float_format='%.2f', index=False)
-
-#dari = DetailParArticle('BP_2025_ville.pdf', [31, 32], 1,
-#                        header_lines=4,
-#                        labels_to_fix={0: 'Chapitre',
-#                                       1: 'Chap. / Art.',
-#                                       2: np.nan,
-#                                       },
-#                        data_to_fix = {(0, 'Chapitre'): 'Total'},
-#                        config=conf)
 
 print('-'*50, 'Done')
 
@@ -295,12 +259,16 @@ class test_bg(unittest.TestCase):
         self._test_equals(act, ref)
 
     def test_vue_ensemble_depenses(self):
-        act = VueEnsembleDepenses('BP_2025_ville.pdf', 21, 1).data
+        act = BaseView(self.filename,
+                       config=self.config['vedi']
+                       ).data
         ref = pd.read_csv('vedi-reference.csv')
         self._test_equals(act, ref)
         
     def test_vue_ensemble_recettes(self):
-        act = VueEnsembleDepenses('BP_2025_ville.pdf', 23, 1).data
+        act = BaseView(self.filename,
+                       config=self.config['veri']
+                       ).data
         ref = pd.read_csv('veri-reference.csv')
         self._test_equals(act, ref)
 
@@ -313,12 +281,12 @@ class test_bg(unittest.TestCase):
                                header_lines=5,
                                ).data
         ref = pd.read_csv('dadi-reference.csv')
-        self._test_equals(act, ref, False)
-        act = DetailParArticle(self.filename,
+        self._test_equals(act, ref)
+        act = BaseView(self.filename,
                                config=self.config['dari'],
                                ).data
         ref = pd.read_csv('dari-reference.csv')
-        self._test_equals(act, ref, True)
+        self._test_equals(act, ref)
        
         
 if __name__ == '__main__':
