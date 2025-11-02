@@ -31,7 +31,6 @@ class BaseView:
             self.read_multipage_table(self.filename, self.pages, axis)
 
     def update_config(self, config):
-        print(config)
         header_lines = config.get('header_lines', self.header_lines)
         if header_lines is None:
             self.header_lines = self.LAST_HEADER_LINE + 1
@@ -62,9 +61,6 @@ class BaseView:
         data = None
         for page in pages:
             self.read_singlepage_table(filename, page)
-#            print('*-'*20)
-#            print(self.data)
-#            print('+-'*20)
             if data is None:
                 data = self.data
                 self.table_number = 0
@@ -158,36 +154,13 @@ class BaseView:
     def convert_first_col_to_string(self):
         self.data = self.data.astype({'Chapitre': str})
 
-class BalanceGenerale(BaseView):
-    DATA_START_COLUMN = 2
-    INITIAL_CHAPTER_NAME_COLUMN = 1
-    LAST_HEADER_LINE = 0
-
-    def fix_labels(self, names):
-        names[0] = "Chapitre"
-        if not names[2]:
-            names[2] = np.nan
-        return names
-
-if WRITE_REFERENCE_FILES:
-    bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
-    bgdi.data.to_csv('bgdi.csv', float_format='%.2f', index=False)
-    bgdf = BalanceGenerale('BP_2025_ville.pdf', 17, 2)
-    bgdf.data.to_csv('bgdf.csv', float_format='%.2f', index=False)
-    bgri = BalanceGenerale('BP_2025_ville.pdf', 19, 1)
-    bgri.data.to_csv('bgri.csv', float_format='%.2f', index=False)
-    bgrf = BalanceGenerale('BP_2025_ville.pdf', 19, 2)
-    bgrf.data.to_csv('bgrf.csv', float_format='%.2f', index=False)
-
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
-print(conf)
 filename = conf['general']['filename']
+
 for table in conf['general']['tables']:
     ct = conf[table]
     c = BaseView(filename, config=ct)
-    if table == 'veri':
-        print(c.data)
     if WRITE_REFERENCE_FILES:
         c.data.to_csv(table + '.csv', float_format='%.2f', index=False)
 
@@ -217,22 +190,22 @@ class test_bg(unittest.TestCase):
         return self.assertTrue(actual.equals(reference))
     
     def test_balance_generale_depenses_invest(self):
-        act = BalanceGenerale('BP_2025_ville.pdf', 17, 1).data
+        act = BaseView(self.filename, config=self.config['bgdi']).data
         ref = pd.read_csv('bgdi-reference.csv')
         self._test_equals(act, ref)
 
     def test_balance_generale_depenses_fonct(self):
-        act = BalanceGenerale('BP_2025_ville.pdf', 17, 2).data
+        act = BaseView(self.filename, config=self.config['bgdf']).data
         ref = pd.read_csv('bgdf-reference.csv')
         self._test_equals(act, ref)
 
     def test_balance_generale_recettes_invest(self):
-        act = BalanceGenerale('BP_2025_ville.pdf', 19, 1).data
+        act = BaseView(self.filename, config=self.config['bgri']).data
         ref = pd.read_csv('bgri-reference.csv')
         self._test_equals(act, ref)
 
     def test_balance_generale_recettes_fonct(self):
-        act = BalanceGenerale('BP_2025_ville.pdf', 19, 2).data
+        act = BaseView(self.filename, config=self.config['bgrf']).data
         ref = pd.read_csv('bgrf-reference.csv')
         self._test_equals(act, ref)
 
