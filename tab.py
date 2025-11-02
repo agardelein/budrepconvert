@@ -169,12 +169,6 @@ class BalanceGenerale(BaseView):
             names[2] = np.nan
         return names
 
-
-
-class DetailParArticle(BaseView):
-    DATA_START_COLUMN = 2
-    INITIAL_CHAPTER_NAME_COLUMN = 1
-
 if WRITE_REFERENCE_FILES:
     bgdi = BalanceGenerale('BP_2025_ville.pdf', 17, 1)
     bgdi.data.to_csv('bgdi.csv', float_format='%.2f', index=False)
@@ -184,22 +178,6 @@ if WRITE_REFERENCE_FILES:
     bgri.data.to_csv('bgri.csv', float_format='%.2f', index=False)
     bgrf = BalanceGenerale('BP_2025_ville.pdf', 19, 2)
     bgrf.data.to_csv('bgrf.csv', float_format='%.2f', index=False)
-    dadi1 = DetailParArticle('BP_2025_ville.pdf', 25, 1,
-                            labels_to_fix={0: 'Chapitre',
-                                           3: np.nan,
-                                           4: 'Rar N-1 I'},
-                            header_lines=5)
-    dadi1.data.to_csv('dadi1.csv', float_format='%.2f', index=False)
-    dadi2 = DetailParArticle('BP_2025_ville.pdf', 26, 0,
-                            labels_to_fix={0: 'Chapitre'},
-                            header_lines=5)
-    dadi2.data.to_csv('dadi2.csv', float_format='%.2f', index=False)
-    dadi = DetailParArticle('BP_2025_ville.pdf', [25, 26], 1,
-                            labels_to_fix={0: 'Chapitre',
-                                           3: np.nan,
-                                           4: 'Rar N-1 I'},
-                            header_lines=5)
-    dadi.data.to_csv('dadi.csv', float_format='%.2f', index=False)
 
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
@@ -273,18 +251,14 @@ class test_bg(unittest.TestCase):
         self._test_equals(act, ref)
 
     def test_detail_par_article(self):
-        act = DetailParArticle('BP_2025_ville.pdf', [25, 26],
-                               1,
-                               labels_to_fix={0: 'Chapitre',
-                                              3: np.nan,
-                                              4: 'Rar N-1 I'},
-                               header_lines=5,
-                               ).data
+        act = BaseView(self.filename,
+                       config=self.config['dadi'],
+                       ).data
         ref = pd.read_csv('dadi-reference.csv')
         self._test_equals(act, ref)
         act = BaseView(self.filename,
-                               config=self.config['dari'],
-                               ).data
+                       config=self.config['dari'],
+                       ).data
         ref = pd.read_csv('dari-reference.csv')
         self._test_equals(act, ref)
        
