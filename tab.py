@@ -178,6 +178,11 @@ class test_bg(unittest.TestCase):
         data = data.astype({'Chapitre': str})
         return data.convert_dtypes(convert_integer=False)
 
+    def _test_table(self, table):
+        act = BaseView(self.filename, config=self.config[table]).data
+        ref = pd.read_csv(table + '-reference.csv')
+        self._test_equals(act, ref)
+
     def _test_equals(self, act, ref, show=False):
         actual = self.convert_data(act)        
         reference = self.convert_data(ref)
@@ -190,50 +195,26 @@ class test_bg(unittest.TestCase):
         return self.assertTrue(actual.equals(reference))
     
     def test_balance_generale_depenses_invest(self):
-        act = BaseView(self.filename, config=self.config['bgdi']).data
-        ref = pd.read_csv('bgdi-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('bgdi')
 
     def test_balance_generale_depenses_fonct(self):
-        act = BaseView(self.filename, config=self.config['bgdf']).data
-        ref = pd.read_csv('bgdf-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('bgdf')
 
     def test_balance_generale_recettes_invest(self):
-        act = BaseView(self.filename, config=self.config['bgri']).data
-        ref = pd.read_csv('bgri-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('bgri')
 
     def test_balance_generale_recettes_fonct(self):
-        act = BaseView(self.filename, config=self.config['bgrf']).data
-        ref = pd.read_csv('bgrf-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('bgrf')
 
     def test_vue_ensemble_depenses(self):
-        act = BaseView(self.filename,
-                       config=self.config['vedi']
-                       ).data
-        ref = pd.read_csv('vedi-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('vedi')
         
     def test_vue_ensemble_recettes(self):
-        act = BaseView(self.filename,
-                       config=self.config['veri']
-                       ).data
-        ref = pd.read_csv('veri-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('veri')
 
     def test_detail_par_article(self):
-        act = BaseView(self.filename,
-                       config=self.config['dadi'],
-                       ).data
-        ref = pd.read_csv('dadi-reference.csv')
-        self._test_equals(act, ref)
-        act = BaseView(self.filename,
-                       config=self.config['dari'],
-                       ).data
-        ref = pd.read_csv('dari-reference.csv')
-        self._test_equals(act, ref)
+        self._test_table('dadi')
+        self._test_table('dari')
        
         
 if __name__ == '__main__':
