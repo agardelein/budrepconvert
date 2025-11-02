@@ -1,70 +1,48 @@
 [general]
 filename = 'BP_2025_ville.pdf'
-#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi']
-tables = ['dadf']
+tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi']
+#tables = ['dadf']
 
 [dadf]
 
 [bgdi]
 pages = 17
-data_start_column = 2
-initial_chapter_name_column = 1
-table_number = 1
 labels_to_fix = {0 = 'Chapitre', 2 = 'nan'}
 
 [bgdf]
 pages = 17
-data_start_column = 2
-initial_chapter_name_column = 1
 table_number = 2
 labels_to_fix = {0 = 'Chapitre'}
 
 [bgri]
 pages = 19
-data_start_column = 2
-initial_chapter_name_column = 1
-table_number = 1
 labels_to_fix = {0 = 'Chapitre', 2 = 'nan'}
 
 [bgrf]
 pages = 19
-data_start_column = 2
-initial_chapter_name_column = 1
 table_number = 2
 labels_to_fix = {0 = 'Chapitre'}
 
 [vedi]
 pages = 21
 header_lines = 5
-data_start_column = 2
-initial_chapter_name_column = 1
-table_number = 1
 labels_to_fix = {0 = 'Chapitre', 1 = 'Titre Chapitre', 2 = 'nan'}
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [veri]
 pages = 23
 header_lines = 4
-data_start_column = 2
-initial_chapter_name_column = 1
-table_number = 1
 labels_to_fix = {0 = 'Chapitre', 1 = 'Titre Chapitre', 2 = 'nan', 4 = 'nan', 5 = 'Rar N-1 I'}
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadi]
 pages = [25, 26]
 header_lines = 5
-table_number = 1
-data_start_column = 2
-initial_chapter_name_column = 1
 labels_to_fix = {0 = 'Chapitre', 3 = "nan", 4 = "Rar N-1 I"}
 
 [dari]
 pages = [31, 32]
 header_lines = 4
-table_number = 1
-data_start_column = 2
-initial_chapter_name_column = 1
 31.labels_to_fix = {0 = 'Chapitre', 1 = 'Chap. / Art', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
 32.labels_to_fix = {0 = 'Chapitre', 1 = 'Chap. / Art'}

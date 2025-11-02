@@ -11,24 +11,23 @@ import tomllib
 WRITE_REFERENCE_FILES = True
 
 class BaseView:
-    def __init__(self, filename=None, pages=None, table_number=1, axis=0,
-                 header_lines=None,
-                 labels_to_fix={},
-                 data_to_fix={},
-                 config={}):
+    def __init__(self, filename, config):
         self.data = None
-        self.labels_to_fix = labels_to_fix
-        self.data_to_fix = data_to_fix
+        self.labels_to_fix = {}
+        self.data_to_fix = {}
         self.config = config
-        self.header_lines = header_lines
-        self.table_number = table_number
-        self.pages = pages
+        self.header_lines = 1
+        self.table_number = 1
+        self.pages = None
+        self.data_start_column = 2
+        self.initial_chapter_name_column = 1
         self.filename = filename
+        self.axis = 0
         self.update_config(config)
         if isinstance(self.pages, int):
             self.read_singlepage_table(self.filename, self.pages)
         else:
-            self.read_multipage_table(self.filename, self.pages, axis)
+            self.read_multipage_table(self.filename, self.pages, self.axis)
 
     def update_config(self, config):
         header_lines = config.get('header_lines', self.header_lines)
@@ -36,8 +35,8 @@ class BaseView:
             self.header_lines = self.LAST_HEADER_LINE + 1
         else:
             self.header_lines = header_lines
-        self.DATA_START_COLUMN = config.get('data_start_column', 2)
-        self.INITIAL_CHAPTER_NAME_COLUMN = config.get('initial_chapter_name_column', 1)
+        self.data_start_column = config.get('data_start_column', self.data_start_column)
+        self.initial_chapter_name_column = config.get('initial_chapter_name_column', self.initial_chapter_name_column)
         self.data_to_fix = config.get('data_to_fix', self.data_to_fix)
         self.labels_to_fix = config.get('labels_to_fix', self.labels_to_fix)
         if isinstance(self.data_to_fix, list):
@@ -45,6 +44,7 @@ class BaseView:
         self.table_number = config.get('table_number', self.table_number)
         self.pages = config.get('pages', self.pages)
         self.filename = config.get('filename', self.filename)
+        self.axis = config.get('axis', self.axis)
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
@@ -109,17 +109,17 @@ class BaseView:
         self.data.reset_index(drop=True, inplace=True)
 
     def line_has_no_data(self, line):
-        a = line.iloc[self.DATA_START_COLUMN:].dropna()
+        a = line.iloc[self.data_start_column:].dropna()
         return a.empty
     
     def merge_with_previous_line(self, num):
-        col = self.INITIAL_CHAPTER_NAME_COLUMN
+        col = self.initial_chapter_name_column
         part1 = self.data.iloc[num - 1, col].strip()
         part2 = self.data.iloc[num, col].strip()
         self.data.iloc[num - 1, col] = part1 + " " + part2
         
     def remove_notes_from_chapter_names(self):
-        col = self.INITIAL_CHAPTER_NAME_COLUMN
+        col = self.initial_chapter_name_column
         r = self.data.iloc[:, col].apply(self.remove_notes)
         self.data.iloc[:, col] = r
 
@@ -147,8 +147,8 @@ class BaseView:
             except ValueError:
                 return s
 
-        dataset = self.data.iloc[:, self.DATA_START_COLUMN:]
-        self.data.iloc[:,self.DATA_START_COLUMN:] = dataset.map(fun)
+        dataset = self.data.iloc[:, self.data_start_column:]
+        self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
         self.data = self.data.convert_dtypes(convert_integer=False)
 
     def convert_first_col_to_string(self):
@@ -160,7 +160,7 @@ filename = conf['general']['filename']
 
 for table in conf['general']['tables']:
     ct = conf[table]
-    c = BaseView(filename, config=ct)
+    c = BaseView(filename, ct)
     if WRITE_REFERENCE_FILES:
         c.data.to_csv(table + '.csv', float_format='%.2f', index=False)
 
@@ -179,7 +179,7 @@ class test_bg(unittest.TestCase):
         return data.convert_dtypes(convert_integer=False)
 
     def _test_table(self, table):
-        act = BaseView(self.filename, config=self.config[table]).data
+        act = BaseView(self.filename, self.config[table]).data
         ref = pd.read_csv(table + '-reference.csv')
         self._test_equals(act, ref)
 
