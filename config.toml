@@ -1,3 +1,63 @@
+# Configuration file for budget report extraction
+# This file shall contain at least the [general section]
+# and then one section by table to extract
+#
+# [general]
+# filename = '' # mandatory, source file name
+# tables = [] # mandatory, list of tables to extract
+#
+# [table1]
+# pages - The list of the pages to extract, can be:
+# - an integer for a single page
+# - a list of integers for multi-page table, merged according
+#   to 'axis'
+# - a list mixing integers and list of integer, merged according
+#   to 'axis' and sublists merged according to 'index'
+# Defaults to None (leads to error)
+# pages = None
+#
+# table_number - The number of the table in the page, defaults to 1
+# table_number = 1
+#
+# header_lines - The number of lines in the header, defaults to 1
+# header_lines = 1
+#
+# data_start_column - The first data column, starting from 0 and
+# counted right after read, before header, index and data processing
+# Defaults to 2
+# data_start_column = 2
+#
+# initial_chapter_name_column - The column of the chapter name,
+# counted right after read, before header, index and data processing.
+# Defaults to 1
+# initial_chapter_name_column = 1
+#
+# axis - The axis to merge multipages, can be either 0/'index' or
+# 1/'columns'. This is passed directly to pandas.concat.
+# Defaults to 'index' 
+# axis = 'index'
+#
+# chapter_number_mixed_with_name - Boolean, indicates whether in
+# output from file read the first rows contains both the chapter
+# number and the chapter name. Defaults to false
+# chapter_number_mixed_with_name = false
+#
+# verbose - Boolean. Be verbose during processing, defaults to false
+# verbose = false
+#
+# labels_to_fix - dict of column number/label pairs. Replace column
+# number by label. The replacement is performed after file read and
+# chapter number/name demixing (if any).
+# If the column 0 is not specified, it is replaced by 'Chapitre'.
+# 'nan' can be specified as label to drop column if useless
+# Defaults to {}
+# labels_to_fix = {}
+#
+# data_to_fix - array of arrays of key/value pairs. Set 'value'
+# at 'key' location.
+# 'key' shall be in format '[row, column]'.
+# Defaults to []
+# data_to_fix = []
 [general]
 filename = 'BP_2025_ville.pdf'
 tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei']
