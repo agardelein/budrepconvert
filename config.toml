@@ -4,78 +4,63 @@ tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf'
 
 [bgdi]
 pages = 17
-labels_to_fix = {0 = 'Chapitre', 2 = 'nan'}
+labels_to_fix = {2 = 'nan'}
 
 [bgdf]
 pages = 17
 table_number = 2
-labels_to_fix = {0 = 'Chapitre'}
 
 [bgri]
 pages = 19
-labels_to_fix = {0 = 'Chapitre', 2 = 'nan'}
+labels_to_fix = {2 = 'nan'}
 
 [bgrf]
 pages = 19
 table_number = 2
-labels_to_fix = {0 = 'Chapitre'}
 
 [vedi]
 pages = 21
 header_lines = 5
-labels_to_fix = {0 = 'Chapitre', 1 = 'Titre Chapitre', 2 = 'nan'}
+labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan'}
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [veri]
 pages = 23
 header_lines = 4
-labels_to_fix = {0 = 'Chapitre', 1 = 'Titre Chapitre', 2 = 'nan', 4 = 'nan', 5 = 'Rar N-1 I'}
+labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan', 4 = 'nan', 5 = 'Rar N-1 I'}
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadi]
 pages = [25, 26]
 header_lines = 5
-labels_to_fix = {0 = 'Chapitre', 3 = "nan", 4 = "Rar N-1 I"}
+labels_to_fix = {3 = "nan", 4 = "Rar N-1 I"}
 
 [dari]
 pages = [31, 32]
 header_lines = 4
-31.labels_to_fix = {0 = 'Chapitre', 1 = 'Chap. / Art', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
+31.labels_to_fix = {1 = 'Chap. / Art', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
-32.labels_to_fix = {0 = 'Chapitre', 1 = 'Chap. / Art'}
+32.labels_to_fix = {1 = 'Chap. / Art'}
 32.data_to_fix = []
 
 [dadf]
 pages = [36, 37, 38, 39]
 header_lines = 5
-36.labels_to_fix = {0 = 'Chapitre'}
-36.data_start_column = 2
-37.labels_to_fix = {0 = 'Chapitre'}
-37.data_start_column = 2
-38.labels_to_fix = {0 = 'Chapitre'}
-38.data_start_column = 2
-39.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = "nan"}
+39.labels_to_fix = {1 = 'Libellé', 2 = "nan"}
 39.chapter_number_mixed_with_name = true
-39.data_start_column = 2
 
 [darf]
 pages = [41, 42]
 header_lines = 3
-41.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
+41.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
 42.chapter_number_mixed_with_name = true
-42.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = 'nan', 3 = 'nan', 5 = "nan", 6 = "Rar N-1 I"}
+42.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 3 = 'nan', 5 = "nan", 6 = "Rar N-1 I"}
 
 [pcvei]
 pages = [44, [45, 46]]
-axis = 1
+axis = 'columns'
 44.header_lines = 7
-44.labels_to_fix = {0 = 'Chapitre', 9 = 'nan', 10 = '4-4 RSA'}
-44.data_start_column = 2
-45.table_number = 1
+44.labels_to_fix = {9 = 'nan', 10 = '4-4 RSA'}
 45.header_lines = 5
-45.labels_to_fix = {0 = 'Chapitre'}
-45.data_start_column = 2
-46.labels_to_fix = {0 = 'Chapitre', 5 = 'nan', 6 = '8 Transports', 8 = 'nan', 9 = 'Total'}
-46.table_number = 0
-46.data_start_column = 2
+46.labels_to_fix = {5 = 'nan', 6 = '8 Transports', 8 = 'nan', 9 = 'Total'}
 46.header_lines = 5

@@ -10,7 +10,7 @@ import tomllib
 
 WRITE_REFERENCE_FILES = True
 
-class BaseView:
+class SinglePageTable:
     def __init__(self, filename, config):
         self.data = None
         self.labels_to_fix = {}
@@ -21,15 +21,11 @@ class BaseView:
         self.pages = None
         self.data_start_column = 2
         self.initial_chapter_name_column = 1
-        self.filename = filename
         self.axis = 'index'
         self.verbose = False
         self.chapter_number_mixed_with_name = False
         self.update_config(config)
-        if isinstance(self.pages, int):
-            self.read_singlepage_table(self.filename, self.pages)
-        else:
-            self.read_multipage_table(self.filename, self.pages, self.axis)
+        self.read_singlepage_table(filename, self.pages)
 
     def update_config(self, config):
         self.header_lines = config.get('header_lines', self.header_lines)
@@ -41,7 +37,6 @@ class BaseView:
             self.data_to_fix = {(k[0], k[1]): v for k, v in self.data_to_fix}
         self.table_number = config.get('table_number', self.table_number)
         self.pages = config.get('pages', self.pages)
-        self.filename = config.get('filename', self.filename)
         self.axis = config.get('axis', self.axis)
         self.verbose = config.get('verbose', self.verbose)
         self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name', self.chapter_number_mixed_with_name)
@@ -62,28 +57,9 @@ class BaseView:
         self.fix_data()
         self.print_if_verbose('*.', 'After fix_data')
         
-        self.convert_first_col_to_string()
+        self.convert_first_col_to_index()
         self.convert_data()
         self.print_if_verbose('*+', 'After convert_data')
-
-    def read_multipage_table(self, filename, pages, axis):
-        data = None
-        for page in pages:
-            if isinstance(page, list):
-                self.read_multipage_table(filename, page, 'index')
-            else:
-                self.read_singlepage_table(filename, page)
-            if data is None:
-                data = self.data
-                self.table_number = 0
-            else:
-                if axis in [0, 'index']:
-                    data = pd.concat([data, self.data], axis=axis)
-                else:
-                    data = pd.concat([data, self.data.iloc[:,2:]], axis=axis,
-                                     )
-        self.data = data
-        self.print_if_verbose('/-', 'After concat')
 
     def read_data(self, filename, page, table_number):
         df = tabula.read_pdf(filename,
@@ -105,6 +81,8 @@ class BaseView:
         self.data.reset_index(drop=True, inplace=True)
 
     def fix_labels(self, names):
+        if 0 not in self.labels_to_fix.keys():
+            self.labels_to_fix[0] = 'Chapitre'
         for i, label in self.labels_to_fix.items():
             if label == 'nan':
                 names[int(i)] = np.nan
@@ -168,21 +146,25 @@ class BaseView:
         self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
         self.data = self.data.convert_dtypes(convert_integer=False)
 
-    def convert_first_col_to_string(self):
+    def convert_first_col_to_index(self):
         index= pd.Series(["" for x in range(self.data.shape[0])])
         for i in range(self.data.iloc[:,0].size):
-            val = self.data.iloc[i, 0]
-            if not isinstance(val, str) and np.isnan(val):
+            value = self.data.iloc[i, 0]
+            if isinstance(value, str):
+                index.iloc[i] = value
+            elif np.isnan(value):
                 index.iloc[i] = self.data.iloc[i, 1]
                 self.data.iloc[i, 1] = ''
-            elif not isinstance(val, str):
-                index.iloc[i] = f'{int(self.data.iloc[i, 0]):d}'
             else:
-                index.iloc[i] = self.data.iloc[i, 0]
+                index.iloc[i] = self.to_integer_string(value)
+                
         index.convert_dtypes()
         self.data.index = index
         self.data.drop('Chapitre', axis=1, inplace=True)
         self.data_start_column = self.data_start_column - 1
+
+    def to_integer_string(self, value):
+        return f'{int(value):d}'
         
     def extract_chapter_numbers(self):
         nums= pd.Series(["" for x in range(self.data[0].size)])
@@ -221,15 +203,74 @@ class BaseView:
             print(self.data)
             print(self.data.dtypes)
 
+class MultiPageTable:
+    def __init__(self, filename, config):
+        self.data = None
+        self.config = config
+        self.pages = None
+        self.axis = 'index'
+        self.verbose = False
+        self.update_config(self.config)
+        self.read_multipage_table(filename, self.pages, self.axis)
+
+    def update_config(self, config):
+        self.pages = config.get('pages', self.pages)
+        self.axis = config.get('axis', self.axis)
+        self.verbose = config.get('verbose', self.verbose)
+
+    def read_multipage_table(self, filename, pages, axis):
+        data = None
+        for page in pages:
+            if data is not None:
+                self.add_to_page_config(page, 'table_number', 0)
+                self.config[str(page)]['table_number'] = 0
+            config = self.config.copy()
+            config['pages'] = page
+            if isinstance(page, list):
+                config['axis'] = 'index'
+                tab = MultiPageTable(filename, config)
+            else:
+                tab = SinglePageTable(filename, config)
+            if data is None:
+                data = tab.data
+            else:
+                if axis in [0, 'index']:
+                    data = pd.concat([data, tab.data], axis=axis)
+                else:
+                    data = pd.concat([data, tab.data.iloc[:,2:]],
+                                     axis=axis)
+        self.data = data
+        self.print_if_verbose('/-', 'After concat')
+
+    def add_to_page_config(self, page, key, value):
+        page = str(page)
+        if page not in self.config.keys():
+            self.config[page] = {}
+        self.config[page][key] = value
+        
+    def print_if_verbose(self, pattern='', comment=''):
+        if self.verbose:
+            print(pattern * 20, comment)
+            print(self.data)
+            print(self.data.dtypes)
+
+def read_from_config(filename, ct):
+    pages = ct['pages']
+    if isinstance(pages, int):
+        data = SinglePageTable(filename, ct).data
+    else:
+        data = MultiPageTable(filename, ct).data
+    return data
+
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
 filename = conf['general']['filename']
 
 for table in conf['general']['tables']:
     ct = conf[table]
-    c = BaseView(filename, ct)
+    c = read_from_config(filename, ct)
     if WRITE_REFERENCE_FILES:
-        c.data.to_csv(table + '.csv', float_format='%.2f')
+        c.to_csv(table + '.csv', float_format='%.2f')
 
 print('-'*50, 'Done')
 
@@ -249,7 +290,7 @@ class test_bg(unittest.TestCase):
         return data.convert_dtypes(convert_integer=False)
 
     def _test_table(self, table, show=False):
-        act = BaseView(self.filename, self.config[table]).data
+        act = read_from_config(self.filename, self.config[table])
         ref = pd.read_csv(table + '-reference.csv', index_col=0)
         self._test_equals(act, ref, show)
 
