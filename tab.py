@@ -22,7 +22,7 @@ class BaseView:
         self.data_start_column = 2
         self.initial_chapter_name_column = 1
         self.filename = filename
-        self.axis = 0
+        self.axis = 'index'
         self.verbose = False
         self.chapter_number_mixed_with_name = False
         self.update_config(config)
@@ -78,8 +78,7 @@ class BaseView:
                 self.table_number = 0
             else:
                 if axis in [0, 'index']:
-                    data = pd.concat([data, self.data], axis=axis,
-                                     ignore_index=True)
+                    data = pd.concat([data, self.data], axis=axis)
                 else:
                     data = pd.concat([data, self.data.iloc[:,2:]], axis=axis,
                                      )
@@ -165,13 +164,25 @@ class BaseView:
                 return float(rep)
             except ValueError:
                 return s
-
         dataset = self.data.iloc[:, self.data_start_column:]
         self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
         self.data = self.data.convert_dtypes(convert_integer=False)
 
     def convert_first_col_to_string(self):
-        self.data = self.data.astype({'Chapitre': str})
+        index= pd.Series(["" for x in range(self.data.shape[0])])
+        for i in range(self.data.iloc[:,0].size):
+            val = self.data.iloc[i, 0]
+            if not isinstance(val, str) and np.isnan(val):
+                index.iloc[i] = self.data.iloc[i, 1]
+                self.data.iloc[i, 1] = ''
+            elif not isinstance(val, str):
+                index.iloc[i] = f'{int(self.data.iloc[i, 0]):d}'
+            else:
+                index.iloc[i] = self.data.iloc[i, 0]
+        index.convert_dtypes()
+        self.data.index = index
+        self.data.drop('Chapitre', axis=1, inplace=True)
+        self.data_start_column = self.data_start_column - 1
         
     def extract_chapter_numbers(self):
         nums= pd.Series(["" for x in range(self.data[0].size)])
@@ -209,7 +220,7 @@ class BaseView:
             print(pattern * 20, comment)
             print(self.data)
             print(self.data.dtypes)
-        
+
 with open('config.toml', 'rb') as f:
     conf = tomllib.load(f)
 filename = conf['general']['filename']
@@ -218,7 +229,7 @@ for table in conf['general']['tables']:
     ct = conf[table]
     c = BaseView(filename, ct)
     if WRITE_REFERENCE_FILES:
-        c.data.to_csv(table + '.csv', float_format='%.2f', index=False)
+        c.data.to_csv(table + '.csv', float_format='%.2f')
 
 print('-'*50, 'Done')
 
@@ -230,24 +241,29 @@ class test_bg(unittest.TestCase):
         self.config = config
         self.filename = conf['general']['filename']
     
-    def convert_data(self, data):
-        data = data.astype({'Chapitre': str})
+    def convert_data(self, data, show=False):
+        for i, v in enumerate(data.iloc[:,0]):
+            if not isinstance(v, str) and \
+               (isinstance(v, pd._libs.missing.NAType) or np.isnan(v)):
+                    data.iloc[i, 0] = ''
         return data.convert_dtypes(convert_integer=False)
 
     def _test_table(self, table, show=False):
         act = BaseView(self.filename, self.config[table]).data
-        ref = pd.read_csv(table + '-reference.csv')
+        ref = pd.read_csv(table + '-reference.csv', index_col=0)
         self._test_equals(act, ref, show)
 
     def _test_equals(self, act, ref, show=False):
-        actual = self.convert_data(act)        
-        reference = self.convert_data(ref)
+        actual = self.convert_data(act, show)        
+        reference = self.convert_data(ref, show)
         if show:
             print('/'*40)
             print(actual)
             print(reference)
             print(actual.dtypes)
             print(reference.dtypes)
+            print(actual.index)
+            print(reference.index)
         return self.assertTrue(actual.equals(reference))
     
     def test_balance_generale_depenses_invest(self):
