@@ -1,6 +1,15 @@
 # Configuration file for budget report extraction
+#
 # This file shall contain at least the [general section]
 # and then one section by table to extract
+# Each table property can be specified per-page using dotted key
+# notation with page name and propety:
+# [testpage]
+# pages = [45, 46, 47]
+# header_lines = 5
+# 47.header_lines = 2
+#
+# Properties description
 #
 # [general]
 # filename = '' # mandatory, source file name
@@ -58,9 +67,16 @@
 # 'key' shall be in format '[row, column]'.
 # Defaults to []
 # data_to_fix = []
+#
+# swap_labels_to_column - list of list of source/dest pairs. Move
+# source label to destination column. Source column is marked for
+# latter drop as label is set to 'nan'. Defaults to []
+# swap_labels_to_column = []
+
 [general]
 filename = 'BP_2025_ville.pdf'
 tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei']
+#tables = ['f0-sg']
 
 [bgdi]
 pages = 17
@@ -87,21 +103,19 @@ data_to_fix = [[[0, 'Chapitre'], 'Total']]
 [veri]
 pages = 23
 header_lines = 4
-labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan', 4 = 'nan', 5 = 'Rar N-1 I'}
+labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan'}
+swap_labels_to_column = [[4, 5]]
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadi]
 pages = [25, 26]
 header_lines = 5
-labels_to_fix = {3 = "nan", 4 = "Rar N-1 I"}
 
 [dari]
 pages = [31, 32]
 header_lines = 4
-31.labels_to_fix = {1 = 'Chap. / Art', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
+31.swap_labels_to_column = [[2, 1], [4, 5]]
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
-32.labels_to_fix = {1 = 'Chap. / Art'}
-32.data_to_fix = []
 
 [dadf]
 pages = [36, 37, 38, 39]
@@ -112,15 +126,31 @@ header_lines = 5
 [darf]
 pages = [41, 42]
 header_lines = 3
-41.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
+41.swap_labels_to_column = [[2, 1], [4, 5]]
 42.chapter_number_mixed_with_name = true
-42.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 3 = 'nan', 5 = "nan", 6 = "Rar N-1 I"}
+42.swap_labels_to_column = [[2, 1], [5, 6]]
+42.labels_to_fix = {3 = 'nan'}
 
 [pcvei]
 pages = [44, [45, 46]]
 axis = 'columns'
 44.header_lines = 7
-44.labels_to_fix = {9 = 'nan', 10 = '4-4 RSA'}
+44.swap_labels_to_column = [[9, 10]]
 45.header_lines = 5
-46.labels_to_fix = {5 = 'nan', 6 = '8 Transports', 8 = 'nan', 9 = 'Total'}
+46.swap_labels_to_column = [[5, 6], [8, 9]]
 46.header_lines = 5
+
+[f0]
+#verbose = true
+pages = 47
+header_lines = 2
+labels_to_fix = {1 = 'Libellé', 2 = 'nan', 3 = 'nan', 4 = 'nan', 5 = 'Opérations Non Ventilables'}
+data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
+
+[f0-sg]
+#verbose = true
+pages = 50
+49.header_lines = 7
+50.header_lines = 7
+50.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 7 = 'nan', 8 = '048 Autres Actions'}
+axis = 'columns'

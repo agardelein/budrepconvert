@@ -10,6 +10,7 @@ class SinglePageTable:
         self.data = None
         self.labels_to_fix = {}
         self.data_to_fix = {}
+        self.swap_labels_to_column = []
         self.config = config
         self.header_lines = 1
         self.table_number = 1
@@ -30,6 +31,7 @@ class SinglePageTable:
         self.labels_to_fix = config.get('labels_to_fix', self.labels_to_fix)
         if isinstance(self.data_to_fix, list):
             self.data_to_fix = {(k[0], k[1]): v for k, v in self.data_to_fix}
+        self.swap_labels_to_column = config.get('swap_labels_to_column', self.swap_labels_to_column)
         self.table_number = config.get('table_number', self.table_number)
         self.pages = config.get('pages', self.pages)
         self.axis = config.get('axis', self.axis)
@@ -70,6 +72,7 @@ class SinglePageTable:
         for i, col in self.data.items():
             s = ' '.join(self.merge_header_cells(col)).title()
             names[i] = self.remove_notes(s)
+        names = self.swap_labels_and_column(names)
         names = self.fix_labels(names)
         self.data.rename(columns=names, inplace=True)
         self.data.drop(drop_list, inplace=True)
@@ -83,6 +86,12 @@ class SinglePageTable:
                 names[int(i)] = np.nan
             else:
                 names[int(i)] = label
+        return names
+
+    def swap_labels_and_column(self, names):
+        for source, dest in self.swap_labels_to_column:
+            names[dest] = names[source]
+            names[source] = np.nan
         return names
 
     def merge_header_cells(self, cells):
@@ -194,7 +203,7 @@ class SinglePageTable:
 
     def print_if_verbose(self, pattern='', comment=''):
         if self.verbose:
-            print(pattern * 20, comment)
+            print(pattern * 20, comment, 'p.', self.pages)
             print(self.data)
             print(self.data.dtypes)
 
@@ -245,7 +254,7 @@ class MultiPageTable:
         
     def print_if_verbose(self, pattern='', comment=''):
         if self.verbose:
-            print(pattern * 20, comment)
+            print(pattern * 20, comment, 'p.', self.pages)
             print(self.data)
             print(self.data.dtypes)
 

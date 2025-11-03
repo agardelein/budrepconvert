@@ -67,6 +67,7 @@ class test_bg(unittest.TestCase):
        
     def test_multipage_table(self):
         self._test_table('dadf')
+        self._test_table('darf')
 
     def test_multipage_table_4ways(self):
         self._test_table('pcvei')
