@@ -1,9 +1,7 @@
 [general]
 filename = 'BP_2025_ville.pdf'
-#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi']
-#tables = ['dadf']
-#tables = ['bgdf']
-tables = []
+#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf']
+tables = ['darf', 'pcvei']
 
 [bgdi]
 pages = 17
@@ -55,3 +53,24 @@ header_lines = 5
 36.labels_to_fix = {0 = 'Chapitre'}
 39.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = "nan"}
 39.chapter_number_mixed_with_name = true
+
+[darf]
+#verbose = true
+pages = [41, 42]
+header_lines = 3
+41.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = 'nan', 4 = "nan", 5 = "Rar N-1 I"}
+42.chapter_number_mixed_with_name = true
+42.labels_to_fix = {0 = 'Chapitre', 1 = 'Libellé', 2 = 'nan', 3 = 'nan', 5 = "nan", 6 = "Rar N-1 I"}
+
+[pcvei]
+#verbose = true
+pages = [44, [45, 46]]
+axis = 1
+44.header_lines = 7
+44.labels_to_fix = {0 = 'Chapitre', 9 = 'nan', 10 = '4-4 RSA'}
+45.table_number = 1
+45.header_lines = 5
+45.labels_to_fix = {0 = 'Chapitre'}
+46.labels_to_fix = {0 = 'Chapitre', 5 = 'nan', 6 = '8 Transports', 8 = 'nan', 9 = 'Total'}
+46.table_number = 0
+46.header_lines = 5

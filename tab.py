@@ -32,11 +32,7 @@ class BaseView:
             self.read_multipage_table(self.filename, self.pages, self.axis)
 
     def update_config(self, config):
-        header_lines = config.get('header_lines', self.header_lines)
-        if header_lines is None:
-            self.header_lines = self.LAST_HEADER_LINE + 1
-        else:
-            self.header_lines = header_lines
+        self.header_lines = config.get('header_lines', self.header_lines)
         self.data_start_column = config.get('data_start_column', self.data_start_column)
         self.initial_chapter_name_column = config.get('initial_chapter_name_column', self.initial_chapter_name_column)
         self.data_to_fix = config.get('data_to_fix', self.data_to_fix)
@@ -73,13 +69,20 @@ class BaseView:
     def read_multipage_table(self, filename, pages, axis):
         data = None
         for page in pages:
-            self.read_singlepage_table(filename, page)
+            if isinstance(page, list):
+                self.read_multipage_table(filename, page, 'index')
+            else:
+                self.read_singlepage_table(filename, page)
             if data is None:
                 data = self.data
                 self.table_number = 0
             else:
-                data = pd.concat([data, self.data], axis=axis,
-                                 ignore_index=True)
+                if axis in [0, 'index']:
+                    data = pd.concat([data, self.data], axis=axis,
+                                     ignore_index=True)
+                else:
+                    data = pd.concat([data, self.data.iloc[:,2:]], axis=axis,
+                                     )
         self.data = data
         self.print_if_verbose('/-', 'After concat')
 
@@ -115,6 +118,8 @@ class BaseView:
     
     def merge_multilines_cells(self):
         drop_list = []
+        self.data.dropna(how='all', inplace=True, ignore_index=True)
+        self.print_if_verbose('---', 'After dropna')
         for i, line in self.data.iterrows():
             if self.line_has_no_data(line):
                 self.merge_with_previous_line(i)
@@ -268,7 +273,10 @@ class test_bg(unittest.TestCase):
         self._test_table('dari')
        
     def test_multipage_table(self):
-        self._test_table('dadf', True)
+        self._test_table('dadf')
+
+    def test_multipage_table_4ways(self):
+        self._test_table('pcvei')
 
 if __name__ == '__main__':
     unittest.main()
