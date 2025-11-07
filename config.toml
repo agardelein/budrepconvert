@@ -72,11 +72,15 @@
 # source label to destination column. Source column is marked for
 # latter drop as label is set to 'nan'. Defaults to []
 # swap_labels_to_column = []
+#
+# mask_header_cells - list of list of pairs. Avoid to consider the
+# cells included in coordinates for labels construction.
+# mask_header_cells = []
 
 [general]
 filename = 'BP_2025_ville.pdf'
-tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei']
-#tables = ['f0-sg']
+#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0']
+tables = ['f0-sg']
 
 [bgdi]
 pages = 17
@@ -141,16 +145,18 @@ axis = 'columns'
 46.header_lines = 5
 
 [f0]
-#verbose = true
 pages = 47
 header_lines = 2
-labels_to_fix = {1 = 'Libellé', 2 = 'nan', 3 = 'nan', 4 = 'nan', 5 = 'Opérations Non Ventilables'}
-data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
+labels_to_fix = {2 = 'nan'}
+47.swap_labels_to_column = [[3, 1], [4, 5]]
+data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[3, 'Chapitre'], 'RECETTES']]
 
 [f0-sg]
-#verbose = true
-pages = 50
+verbose = true
+pages = 49
 49.header_lines = 7
+49.mask_header_cells = [[[0, 5], [3, 5]]]
+49.data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[8, 'Chapitre'], 'RECETTES']]
 50.header_lines = 7
-50.labels_to_fix = {1 = 'Libellé', 2 = 'nan', 7 = 'nan', 8 = '048 Autres Actions'}
+50.swap_labels_to_column = [[2, 1], [7, 8]]
 axis = 'columns'

@@ -20,23 +20,29 @@ class SinglePageTable:
         self.axis = 'index'
         self.verbose = False
         self.chapter_number_mixed_with_name = False
+        self.mask_header_cells = []
         self.update_config(config)
         self.read_singlepage_table(filename, self.pages)
 
     def update_config(self, config):
         self.header_lines = config.get('header_lines', self.header_lines)
-        self.data_start_column = config.get('data_start_column', self.data_start_column)
+        self.data_start_column = config.get('data_start_column',
+                                            self.data_start_column)
         self.initial_chapter_name_column = config.get('initial_chapter_name_column', self.initial_chapter_name_column)
         self.data_to_fix = config.get('data_to_fix', self.data_to_fix)
-        self.labels_to_fix = config.get('labels_to_fix', self.labels_to_fix)
+        self.labels_to_fix = config.get('labels_to_fix',
+                                        self.labels_to_fix)
         if isinstance(self.data_to_fix, list):
             self.data_to_fix = {(k[0], k[1]): v for k, v in self.data_to_fix}
-        self.swap_labels_to_column = config.get('swap_labels_to_column', self.swap_labels_to_column)
+        self.swap_labels_to_column = config.get('swap_labels_to_column',
+                                                self.swap_labels_to_column)
         self.table_number = config.get('table_number', self.table_number)
         self.pages = config.get('pages', self.pages)
         self.axis = config.get('axis', self.axis)
         self.verbose = config.get('verbose', self.verbose)
-        self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name', self.chapter_number_mixed_with_name)
+        self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name',self.chapter_number_mixed_with_name)
+        self.mask_header_cells = config.get('mask_header_cells',
+                                            self.mask_header_cells)
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
@@ -69,6 +75,7 @@ class SinglePageTable:
     def convert_header_to_labels(self):
         drop_list = list(range(self.header_lines))
         names = {}
+        self.mask_cells()
         for i, col in self.data.items():
             s = ' '.join(self.merge_header_cells(col)).title()
             names[i] = self.remove_notes(s)
@@ -78,6 +85,20 @@ class SinglePageTable:
         self.data.drop(drop_list, inplace=True)
         self.data.reset_index(drop=True, inplace=True)
 
+    def mask_cells(self):
+        for coords in self.mask_header_cells:
+            c1 = coords[0]
+            c2 = coords[1]
+            if c1[0] == c2[0] and c1[1] == c2[1]:
+                self.data.loc[c1[0],c1[1]] = np.nan
+            elif c1[0] == c2[0] and c1[1] != c2[1]:
+                self.data.loc[c1[0],c1[1]:c2[1]] = np.nan
+            elif c1[0] != c2[0] and c1[1] == c2[1]:
+                self.data.loc[c1[0]:c2[0],c1[1]] = np.nan
+            else:
+                self.data.loc[c1[0]:c2[0],c1[1]:c2[1]] = np.nan
+            print(self.data.loc[c1[0]:c2[0],c1[1]:c2[1]])
+        
     def fix_labels(self, names):
         if 0 not in self.labels_to_fix.keys():
             self.labels_to_fix[0] = 'Chapitre'
