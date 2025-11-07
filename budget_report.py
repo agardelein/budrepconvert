@@ -21,6 +21,7 @@ class SinglePageTable:
         self.verbose = False
         self.chapter_number_mixed_with_name = False
         self.mask_header_cells = []
+        self.split_column_data = {}
         self.update_config(config)
         self.read_singlepage_table(filename, self.pages)
 
@@ -43,6 +44,8 @@ class SinglePageTable:
         self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name',self.chapter_number_mixed_with_name)
         self.mask_header_cells = config.get('mask_header_cells',
                                             self.mask_header_cells)
+        self.split_column_data = config.get('split_column_data',
+                                            self.split_column_data)
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
@@ -51,6 +54,8 @@ class SinglePageTable:
         
         if self.chapter_number_mixed_with_name:
             self.extract_chapter_numbers()
+        self.mask_cells()
+        self.split_columns()
         self.convert_header_to_labels()
         self.print_if_verbose('*/', 'After convert_header_to_labels')
         
@@ -72,10 +77,15 @@ class SinglePageTable:
                              )
         self.data = df[table_number]
 
+    def split_columns(self):
+        for source, dest in self.split_column_data.items():
+            for line in range(self.header_lines, self.data.shape[0]):
+                s = self.data.loc[line, int(source)].split()
+                self.data.loc[line, dest[0]:dest[1]] = s
+        
     def convert_header_to_labels(self):
         drop_list = list(range(self.header_lines))
         names = {}
-        self.mask_cells()
         for i, col in self.data.items():
             s = ' '.join(self.merge_header_cells(col)).title()
             names[i] = self.remove_notes(s)
@@ -97,7 +107,6 @@ class SinglePageTable:
                 self.data.loc[c1[0]:c2[0],c1[1]] = np.nan
             else:
                 self.data.loc[c1[0]:c2[0],c1[1]:c2[1]] = np.nan
-            print(self.data.loc[c1[0]:c2[0],c1[1]:c2[1]])
         
     def fix_labels(self, names):
         if 0 not in self.labels_to_fix.keys():

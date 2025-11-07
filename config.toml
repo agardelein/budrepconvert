@@ -73,7 +73,7 @@
 # latter drop as label is set to 'nan'. Defaults to []
 # swap_labels_to_column = []
 #
-# mask_header_cells - list of list of pairs. Avoid to consider the
+# mask_header_cells - list of list of line/column pairs. Avoid to consider the
 # cells included in coordinates for labels construction.
 # mask_header_cells = []
 
@@ -153,10 +153,12 @@ data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[3, 'Chapitre'], 'RECETTES']]
 
 [f0-sg]
 verbose = true
-pages = 49
+pages = 50
 49.header_lines = 7
 49.mask_header_cells = [[[0, 5], [3, 5]]]
 49.data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[8, 'Chapitre'], 'RECETTES']]
 50.header_lines = 7
 50.swap_labels_to_column = [[2, 1], [7, 8]]
+50.mask_header_cells = [[[0, 5], [1, 5]]]
+50.split_column_data = {5 = [4, 5]}
 axis = 'columns'

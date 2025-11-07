@@ -72,5 +72,8 @@ class test_bg(unittest.TestCase):
     def test_multipage_table_4ways(self):
         self._test_table('pcvei')
 
+    def test_multipage_header_mask_and_columns_split(self):
+        self._test_table('f0-sg')
+
 if __name__ == '__main__':
     unittest.main()
