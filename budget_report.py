@@ -50,7 +50,7 @@ class SinglePageTable:
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
         self.read_data(filename, page, self.table_number)
-        self.print_if_verbose('*-', 'After read_data')
+        self.print_if_verbose('*-', f'After read_data Table {self.table_number}')
         
         if self.chapter_number_mixed_with_name:
             self.extract_chapter_numbers()
@@ -257,7 +257,6 @@ class MultiPageTable:
         for page in pages:
             if data is not None:
                 self.add_to_page_config(page, 'table_number', 0)
-                self.config[str(page)]['table_number'] = 0
             config = self.config.copy()
             config['pages'] = page
             if isinstance(page, list):
@@ -271,7 +270,7 @@ class MultiPageTable:
                 if axis in [0, 'index']:
                     data = pd.concat([data, tab.data], axis=axis)
                 else:
-                    data = pd.concat([data, tab.data.iloc[:,2:]],
+                    data = pd.concat([data, tab.data.iloc[:,1:]],
                                      axis=axis)
         self.data = data
         self.print_if_verbose('/-', 'After concat')
@@ -280,7 +279,7 @@ class MultiPageTable:
         page = str(page)
         if page not in self.config.keys():
             self.config[page] = {}
-        self.config[page][key] = value
+        self.config[page][key] = self.config[page].get(key, value)
         
     def print_if_verbose(self, pattern='', comment=''):
         if self.verbose:
