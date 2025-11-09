@@ -122,6 +122,7 @@ header_lines = 4
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadf]
+verbose = true
 pages = [36, 37, 38, 39]
 header_lines = 5
 39.labels_to_fix = {1 = 'nan'}

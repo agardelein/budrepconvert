@@ -48,15 +48,19 @@ class SinglePageTable:
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
+        if self.chapter_number_mixed_with_name:
+            self.initial_chapter_name_column = 0
         self.read_data(filename, page, self.table_number)
         self.print_if_verbose('*-', f'After read_data Table {self.table_number}')
 
         self.convert_header_to_labels()
         self.print_if_verbose('*/', 'After convert_header_to_labels')
+
+        self.merge_multilines_cells()
         if self.chapter_number_mixed_with_name:
             self.extract_chapter_numbers()
             self.print_if_verbose('*_', 'After extract_chapter_number')
-        self.merge_multilines_cells()
+
         self.print_if_verbose('*#', 'After merge_multilines_cells')
         self.remove_notes_from_chapter_names()
         self.fix_data()
