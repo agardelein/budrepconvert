@@ -21,7 +21,7 @@ class SinglePageTable:
         self.verbose = False
         self.chapter_number_mixed_with_name = False
         self.mask_header_cells = []
-        self.split_column_data = {}
+        self.rebuild_data = {}
         self.update_config(config)
         self.read_singlepage_table(filename, self.pages)
 
@@ -44,8 +44,7 @@ class SinglePageTable:
         self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name',self.chapter_number_mixed_with_name)
         self.mask_header_cells = config.get('mask_header_cells',
                                             self.mask_header_cells)
-        self.split_column_data = config.get('split_column_data',
-                                            self.split_column_data)
+        self.rebuild_data = config.get('rebuild_data', self.rebuild_data)
             
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
@@ -55,11 +54,12 @@ class SinglePageTable:
         if self.chapter_number_mixed_with_name:
             self.extract_chapter_numbers()
         self.mask_cells()
-        self.split_columns()
+#        self.split_columns()
         self.convert_header_to_labels()
         self.print_if_verbose('*/', 'After convert_header_to_labels')
         
         self.merge_multilines_cells()
+        self.print_if_verbose('*#', 'After merge_multilines_cells')
         self.remove_notes_from_chapter_names()
         self.delete_useless_columns()
         self.fix_data()
@@ -77,11 +77,20 @@ class SinglePageTable:
                              )
         self.data = df[table_number]
 
-    def split_columns(self):
-        for source, dest in self.split_column_data.items():
-            for line in range(self.header_lines, self.data.shape[0]):
-                s = self.data.loc[line, int(source)].split()
-                self.data.loc[line, dest[0]:dest[1]] = s
+    # def split_columns(self):
+    #     return
+    #     print('#'*40, self.split_column_data)
+    #     for source, dest in self.split_column_data.items():
+    #         print('#'*40, dest)
+    #         for line in range(self.header_lines, self.data.shape[0]):
+    #             if len(dest) == 1:
+    #                 self.data.loc[line, dest[0]] = self.data.loc[line, int(source)]
+    #             else:
+    #                 s = self.data.loc[line, int(source)]
+    #                 r = re.split(r'((\d{1,3} )*\d+,\d\d)', s)
+    #                 l = filter(lambda x: x is not None and ',' in x, r)
+    #                 print(self.data.loc[line, dest[0]:dest[1]])
+    #                 self.data.loc[line, dest[0]:dest[1]] = list(l)
         
     def convert_header_to_labels(self):
         drop_list = list(range(self.header_lines))
@@ -94,6 +103,11 @@ class SinglePageTable:
         self.data.rename(columns=names, inplace=True)
         self.data.drop(drop_list, inplace=True)
         self.data.reset_index(drop=True, inplace=True)
+        for name in names.values():
+            if name not in list(self.data.columns):
+                self.data[name] = self.data.iloc[:,-1]
+                self.data[name] = self.data[name].astype(str)
+                self.data[name] = self.data[name].apply(lambda x: '')
 
     def mask_cells(self):
         for coords in self.mask_header_cells:
@@ -140,6 +154,8 @@ class SinglePageTable:
 
     def line_has_no_data(self, line):
         a = line.iloc[self.data_start_column:].dropna()
+        if not a.empty:
+            print('ççççç', f'<<<{a}>>>')
         return a.empty
     
     def merge_with_previous_line(self, num):
@@ -165,19 +181,44 @@ class SinglePageTable:
 
     def fix_data(self):
         for k, v in self.data_to_fix.items():
+            v = np.nan if v == 'nan' else v
             self.data.loc[k] = v
+        if self.rebuild_data:
+            self.rebuild_line_data()
+
+    def rebuild_line_data(self):
+        for i, row in self.data.iloc[:, 2:].iterrows():
+            s = self.cleaned_row_as_string(row)
+            r = self.split_numbers(s)
+            l = self.filter_none_and_integer_values(r)
+            if l:
+                self.data.iloc[i, 2:] = l
+        self.print_if_verbose('#', 'After rebuild_line_data')
+
+    def cleaned_row_as_string(self, row):
+        return ' '.join(row.dropna())
+
+    def split_numbers(self, s):
+        return re.split(r'((\d{1,3} )*\d+,\d\d)', s)
+
+    def filter_none_and_integer_values(self, r):
+        return list(filter(lambda x: x is not None and ',' in x, r))
     
     def convert_data(self):
         def fun(s):
             if not isinstance(s, str):
                 return s
             rep = s.replace(' ', '').replace(',', '.')
+            if not s:
+                return np.nan
             try:
                 return float(rep)
             except ValueError:
                 return s
         dataset = self.data.iloc[:, self.data_start_column:]
         self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
+        print('/*/*', self.data.index)
+        self.data.dropna(inplace=True, how='all')
         self.data = self.data.convert_dtypes(convert_integer=False)
 
     def convert_first_col_to_index(self):
