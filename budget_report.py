@@ -50,18 +50,15 @@ class SinglePageTable:
         self.update_config(self.config.get(str(page), {}))
         self.read_data(filename, page, self.table_number)
         self.print_if_verbose('*-', f'After read_data Table {self.table_number}')
-        
-        if self.chapter_number_mixed_with_name:
-            self.extract_chapter_numbers()
-        self.mask_cells()
-#        self.split_columns()
+
         self.convert_header_to_labels()
         self.print_if_verbose('*/', 'After convert_header_to_labels')
-        
+        if self.chapter_number_mixed_with_name:
+            self.extract_chapter_numbers()
+            self.print_if_verbose('*_', 'After extract_chapter_number')
         self.merge_multilines_cells()
         self.print_if_verbose('*#', 'After merge_multilines_cells')
         self.remove_notes_from_chapter_names()
-        self.delete_useless_columns()
         self.fix_data()
         self.print_if_verbose('*.', 'After fix_data')
         
@@ -77,26 +74,12 @@ class SinglePageTable:
                              )
         self.data = df[table_number]
 
-    # def split_columns(self):
-    #     return
-    #     print('#'*40, self.split_column_data)
-    #     for source, dest in self.split_column_data.items():
-    #         print('#'*40, dest)
-    #         for line in range(self.header_lines, self.data.shape[0]):
-    #             if len(dest) == 1:
-    #                 self.data.loc[line, dest[0]] = self.data.loc[line, int(source)]
-    #             else:
-    #                 s = self.data.loc[line, int(source)]
-    #                 r = re.split(r'((\d{1,3} )*\d+,\d\d)', s)
-    #                 l = filter(lambda x: x is not None and ',' in x, r)
-    #                 print(self.data.loc[line, dest[0]:dest[1]])
-    #                 self.data.loc[line, dest[0]:dest[1]] = list(l)
-        
     def convert_header_to_labels(self):
+        self.mask_cells()
         drop_list = list(range(self.header_lines))
         names = {}
         for i, col in self.data.items():
-            s = ' '.join(self.merge_header_cells(col)).title()
+            s = self.merge_header_cells(col)
             names[i] = self.remove_notes(s)
         names = self.swap_labels_and_column(names)
         names = self.fix_labels(names)
@@ -108,6 +91,7 @@ class SinglePageTable:
                 self.data[name] = self.data.iloc[:,-1]
                 self.data[name] = self.data[name].astype(str)
                 self.data[name] = self.data[name].apply(lambda x: '')
+        self.delete_useless_columns()
 
     def mask_cells(self):
         for coords in self.mask_header_cells:
@@ -139,7 +123,7 @@ class SinglePageTable:
         return names
 
     def merge_header_cells(self, cells):
-        return cells[:self.header_lines].dropna().astype(str)
+        return ' '.join(cells[:self.header_lines].dropna().astype(str)).title()
     
     def merge_multilines_cells(self):
         drop_list = []
@@ -154,8 +138,8 @@ class SinglePageTable:
 
     def line_has_no_data(self, line):
         a = line.iloc[self.data_start_column:].dropna()
-        if not a.empty:
-            print('ççççç', f'<<<{a}>>>')
+#        if not a.empty:
+#            print('ççççç', f'<<<{a}>>>')
         return a.empty
     
     def merge_with_previous_line(self, num):
@@ -217,7 +201,7 @@ class SinglePageTable:
                 return s
         dataset = self.data.iloc[:, self.data_start_column:]
         self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
-        print('/*/*', self.data.index)
+#        print('/*/*', self.data.index)
         self.data.dropna(inplace=True, how='all')
         self.data = self.data.convert_dtypes(convert_integer=False)
 
@@ -242,17 +226,20 @@ class SinglePageTable:
         return f'{int(value):d}'
         
     def extract_chapter_numbers(self):
-        nums= pd.Series(["" for x in range(self.data[0].size)])
-        names = pd.Series(["" for x in range(self.data[0].size)])
-        for i, s in enumerate(self.data[0]):
+        size = self.data.iloc[:, 0].size
+        nums= pd.Series(["" for x in range(size)])
+        names = pd.Series(["" for x in range(size)])
+        for i, s in enumerate(self.data.iloc[:,0]):
             s = self.remove_notes(s)
             nums[i] = self.find_chapter_number(s)
             s = self.remove_chapter_number(s)
             names[i] = self.find_chapter_name(s)
-        self.data.drop(0, axis=1, inplace=True)
-        c = self.data.columns
-        self.data.rename(columns=lambda x: x + 1, inplace=True)
-        self.data = pd.concat([nums, names, self.data], axis=1)
+        self.data.drop(columns=self.data.columns[0], axis=1, inplace=True)
+        df = pd.DataFrame({'Chapitre':nums, 'Libellé':names})
+#        c = self.data.columns
+#        self.data.rename(columns=lambda x: x + 1, inplace=True)
+        self.data = pd.concat([df, self.data], axis=1)
+#        self.data.rename(columns={0: 'Chapitre', 1: 'Libellé'}, inplace=True)
 
     def find_chapter_number(self, s):
         if not isinstance(s, str):
