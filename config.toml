@@ -112,6 +112,7 @@ swap_labels_to_column = [[4, 5]]
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadi]
+verbose = true
 pages = [25, 26]
 header_lines = 5
 
@@ -122,7 +123,6 @@ header_lines = 4
 31.data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadf]
-verbose = true
 pages = [36, 37, 38, 39]
 header_lines = 5
 39.labels_to_fix = {1 = 'nan'}
@@ -150,7 +150,7 @@ pages = 47
 header_lines = 2
 labels_to_fix = {2 = 'nan'}
 47.swap_labels_to_column = [[3, 1], [4, 5]]
-data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[3, 'Chapitre'], 'RECETTES']]
+#data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[3, 'Chapitre'], 'RECETTES']]
 
 [f0-sg]
 pages = [48, 49, 50]
@@ -192,8 +192,8 @@ axis = 'columns'
 54.swap_labels_to_column = [[2, 1]]
 54.mask_header_cells = [[[0, 6], [3, 6]]]
 54.labels_to_fix = {6 = '282 Sport Scolaire', 7 = '283 Médecine scolaire', 8 = '284 Classes de découverte', 9 = "288 Autre service annexe de l'enseignement", 10 = '29 Sécurité', 11 = 'Total Du Chapitre'}
-54.data_to_fix =[
-     [[0, "288 Autre service annexe de l'enseignement"], '1 866 011,00'],
-     [[1, "288 Autre service annexe de l'enseignement"], ''],
-     [[3, "288 Autre service annexe de l'enseignement"], '1 222 011,00'],
-     [[4, "288 Autre service annexe de l'enseignement"], '']]
+#54.data_to_fix =[
+#     [[0, "288 Autre service annexe de l'enseignement"], '1 866 011,00'],
+#     [[1, "288 Autre service annexe de l'enseignement"], ''],
+#     [[3, "288 Autre service annexe de l'enseignement"], '1 222 011,00'],
+#     [[4, "288 Autre service annexe de l'enseignement"], '']]

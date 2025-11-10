@@ -133,24 +133,71 @@ class SinglePageTable:
         drop_list = []
         self.data.dropna(how='all', inplace=True, ignore_index=True)
         self.print_if_verbose('---', 'After dropna')
-        for i, line in self.data.iterrows():
-            if self.line_has_no_data(line):
-                self.merge_with_previous_line(i)
+        for num, line in self.data.iterrows():
+            if self.is_multirow(num, line):
+                l = self.merge_with_previous_line(num, line)
+                self.data.iloc[num - 1, :] = l
                 drop_list.append(line.name)
         self.data.drop(drop_list, inplace=True)        
         self.data.reset_index(drop=True, inplace=True)
 
-    def line_has_no_data(self, line):
+    def is_multirow(self, num, line):
+        if self.has_no_data(line):
+            return True
+        else:
+            if num and self.preceding_row_has_truncated_numbers(num):
+                return True
+
+    def has_no_data(self, line):
         a = line.iloc[self.data_start_column:].dropna()
 #        if not a.empty:
 #            print('ççççç', f'<<<{a}>>>')
         return a.empty
+
+    def preceding_row_has_truncated_numbers(self, current_index):
+        preceding_index = current_index - 1
+        df = self.data.iloc[preceding_index, self.data_start_column:]
+        return df.apply(lambda cell: isinstance(cell, str) and ',' not in cell).any()
     
-    def merge_with_previous_line(self, num):
-        col = self.initial_chapter_name_column
-        part1 = self.data.iloc[num - 1, col].strip()
-        part2 = self.data.iloc[num, col].strip()
-        self.data.iloc[num - 1, col] = part1 + " " + part2
+    def merge_with_previous_line(self, num, line):
+        df = self.data.iloc[num - 1:num + 1, :]
+        # print('))))', num)
+        # print(df)
+        # print('---- After extraction')
+        dfa = df.iloc[:, :self.data_start_column].apply(lambda x: x.apply(self.prepare_for_merge, args=(True,)))
+        dfb = df.iloc[:, self.data_start_column:].apply(lambda x: x.apply(self.prepare_for_merge, args=(False,)))
+        # print(dfa)
+        # print('*')
+        # print(dfb)
+        sa = dfa.aggregate(' '.join).apply(str.strip)
+        sb = dfb.aggregate(''.join).apply(str.strip)
+
+        # print('**** After agregate')
+        # print(sa)
+        # print('*')
+        # print(sb)
+        # print('++++')
+        line = pd.concat([sa, sb])
+        # print(line)
+        # print(':::: After concat')
+        return line
+
+    def merge_cell_with_preceding(self, num, col):
+        if np.isnan(col) or (isinstance(col, str) and col == 'nan'):
+            self.print_if_verbose('(', 'merge_cell_with_preceding')
+        part1 = self.prepare_for_merge(self.data.loc[num - 1, col])
+        part2 = self.prepare_for_merge(self.data.loc[num, col])
+        sep = ' ' if num < self.data_start_column else ''
+        res = sep.join([part1, part2])
+        return np.nan if not res and num >= self.data_start_column else res
+
+    def prepare_for_merge(self, cell, float_to_int):
+        if isinstance(cell, float) and np.isnan(cell):
+            return ''
+        elif isinstance(cell, float):
+            return str(int(cell)) if float_to_int else str(cell)
+        else:
+            return cell
         
     def remove_notes_from_chapter_names(self):
         col = self.initial_chapter_name_column
@@ -213,9 +260,9 @@ class SinglePageTable:
         index= pd.Series(["" for x in range(self.data.shape[0])])
         for i in range(self.data.iloc[:,0].size):
             value = self.data.iloc[i, 0]
-            if isinstance(value, str):
+            if isinstance(value, str) and value:
                 index.iloc[i] = value
-            elif np.isnan(value):
+            elif (isinstance(value, str) and not value) or np.isnan(value):
                 index.iloc[i] = self.data.iloc[i, 1]
                 self.data.iloc[i, 1] = ''
             else:
