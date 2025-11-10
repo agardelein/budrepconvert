@@ -75,5 +75,8 @@ class test_bg(unittest.TestCase):
     def test_multipage_header_mask_and_columns_split(self):
         self._test_table('f0-sg')
 
+    def test_multipage_header_mask_columns_split_multirows(self):
+        self._test_table('f2')
+
 if __name__ == '__main__':
     unittest.main()

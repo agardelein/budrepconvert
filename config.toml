@@ -112,7 +112,6 @@ swap_labels_to_column = [[4, 5]]
 data_to_fix = [[[0, 'Chapitre'], 'Total']]
 
 [dadi]
-verbose = true
 pages = [25, 26]
 header_lines = 5
 
@@ -173,7 +172,6 @@ header_lines = 5
 swap_labels_to_column = [[2, 1]]
 
 [f2]
-verbose = true
 pages = [52, 53, 54]
 axis = 'columns'
 52.header_lines = 9
@@ -192,8 +190,3 @@ axis = 'columns'
 54.swap_labels_to_column = [[2, 1]]
 54.mask_header_cells = [[[0, 6], [3, 6]]]
 54.labels_to_fix = {6 = '282 Sport Scolaire', 7 = '283 Médecine scolaire', 8 = '284 Classes de découverte', 9 = "288 Autre service annexe de l'enseignement", 10 = '29 Sécurité', 11 = 'Total Du Chapitre'}
-#54.data_to_fix =[
-#     [[0, "288 Autre service annexe de l'enseignement"], '1 866 011,00'],
-#     [[1, "288 Autre service annexe de l'enseignement"], ''],
-#     [[3, "288 Autre service annexe de l'enseignement"], '1 222 011,00'],
-#     [[4, "288 Autre service annexe de l'enseignement"], '']]

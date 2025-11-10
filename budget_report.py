@@ -149,47 +149,28 @@ class SinglePageTable:
                 return True
 
     def has_no_data(self, line):
-        a = line.iloc[self.data_start_column:].dropna()
-#        if not a.empty:
-#            print('ççççç', f'<<<{a}>>>')
+        fun = lambda cell: np.nan if isinstance(cell, str) and not cell else cell
+        a = line.iloc[self.data_start_column:].apply(fun).dropna()
         return a.empty
 
     def preceding_row_has_truncated_numbers(self, current_index):
         preceding_index = current_index - 1
+        fun = lambda cell: isinstance(cell, str) and cell and\
+            ',' not in cell
         df = self.data.iloc[preceding_index, self.data_start_column:]
-        return df.apply(lambda cell: isinstance(cell, str) and ',' not in cell).any()
+        return df.apply(fun).any()
     
     def merge_with_previous_line(self, num, line):
+        fun_a = lambda x: x.apply(self.prepare_for_merge, args=(True,))
+        fun_b = lambda x: x.apply(self.prepare_for_merge, args=(False,))
+        
         df = self.data.iloc[num - 1:num + 1, :]
-        # print('))))', num)
-        # print(df)
-        # print('---- After extraction')
-        dfa = df.iloc[:, :self.data_start_column].apply(lambda x: x.apply(self.prepare_for_merge, args=(True,)))
-        dfb = df.iloc[:, self.data_start_column:].apply(lambda x: x.apply(self.prepare_for_merge, args=(False,)))
-        # print(dfa)
-        # print('*')
-        # print(dfb)
+        dfa = df.iloc[:, :self.data_start_column].apply(fun_a)
+        dfb = df.iloc[:, self.data_start_column:].apply(fun_b)
         sa = dfa.aggregate(' '.join).apply(str.strip)
         sb = dfb.aggregate(''.join).apply(str.strip)
-
-        # print('**** After agregate')
-        # print(sa)
-        # print('*')
-        # print(sb)
-        # print('++++')
         line = pd.concat([sa, sb])
-        # print(line)
-        # print(':::: After concat')
         return line
-
-    def merge_cell_with_preceding(self, num, col):
-        if np.isnan(col) or (isinstance(col, str) and col == 'nan'):
-            self.print_if_verbose('(', 'merge_cell_with_preceding')
-        part1 = self.prepare_for_merge(self.data.loc[num - 1, col])
-        part2 = self.prepare_for_merge(self.data.loc[num, col])
-        sep = ' ' if num < self.data_start_column else ''
-        res = sep.join([part1, part2])
-        return np.nan if not res and num >= self.data_start_column else res
 
     def prepare_for_merge(self, cell, float_to_int):
         if isinstance(cell, float) and np.isnan(cell):
@@ -252,7 +233,6 @@ class SinglePageTable:
                 return s
         dataset = self.data.iloc[:, self.data_start_column:]
         self.data.iloc[:,self.data_start_column:] = dataset.map(fun)
-#        print('/*/*', self.data.index)
         self.data.dropna(inplace=True, how='all')
         self.data = self.data.convert_dtypes(convert_integer=False)
 
@@ -280,6 +260,7 @@ class SinglePageTable:
         size = self.data.iloc[:, 0].size
         nums= pd.Series(["" for x in range(size)])
         names = pd.Series(["" for x in range(size)])
+
         for i, s in enumerate(self.data.iloc[:,0]):
             s = self.remove_notes(s)
             nums[i] = self.find_chapter_number(s)
@@ -287,10 +268,7 @@ class SinglePageTable:
             names[i] = self.find_chapter_name(s)
         self.data.drop(columns=self.data.columns[0], axis=1, inplace=True)
         df = pd.DataFrame({'Chapitre':nums, 'Libellé':names})
-#        c = self.data.columns
-#        self.data.rename(columns=lambda x: x + 1, inplace=True)
         self.data = pd.concat([df, self.data], axis=1)
-#        self.data.rename(columns={0: 'Chapitre', 1: 'Libellé'}, inplace=True)
 
     def find_chapter_number(self, s):
         if not isinstance(s, str):
