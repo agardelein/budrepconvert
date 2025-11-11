@@ -22,6 +22,7 @@ class SinglePageTable:
         self.chapter_number_mixed_with_name = False
         self.mask_header_cells = []
         self.rebuild_data = {}
+        self.data_in_first_column = ''
         self.update_config(config)
         self.read_singlepage_table(filename, self.pages)
 
@@ -45,7 +46,8 @@ class SinglePageTable:
         self.mask_header_cells = config.get('mask_header_cells',
                                             self.mask_header_cells)
         self.rebuild_data = config.get('rebuild_data', self.rebuild_data)
-            
+        self.data_in_first_column = config.get('data_in_first_column', self.data_in_first_column)
+
     def read_singlepage_table(self, filename, page):
         self.update_config(self.config.get(str(page), {}))
         if self.chapter_number_mixed_with_name:
@@ -95,6 +97,8 @@ class SinglePageTable:
                 self.data[name] = self.data.iloc[:,-1]
                 self.data[name] = self.data[name].astype(str)
                 self.data[name] = self.data[name].apply(lambda x: '')
+        if self.data_in_first_column:
+            self.extract_data_from_first_column()
         self.delete_useless_columns()
 
     def mask_cells(self):
@@ -109,7 +113,16 @@ class SinglePageTable:
                 self.data.loc[c1[0]:c2[0],c1[1]] = np.nan
             else:
                 self.data.loc[c1[0]:c2[0],c1[1]:c2[1]] = np.nan
-        
+
+    def extract_data_from_first_column(self):
+        fun = lambda s: pd.Series(re.split(r'((\d{1,3} )*\d+,\d\d)', s)[:2])
+        data = self.data.iloc[:, 0]
+        data = data.apply(fun)
+        data.iloc[:, 0] = data.iloc[:, 0].apply(str.strip)
+        data.columns = [self.data.columns[0], self.data_in_first_column]
+        self.data.drop(columns=self.data.columns[0], inplace=True, axis='columns')
+        self.data = pd.concat([data, self.data], axis='columns')
+
     def fix_labels(self, names):
         if 0 not in self.labels_to_fix.keys():
             self.labels_to_fix[0] = 'Chapitre'

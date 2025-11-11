@@ -73,14 +73,19 @@
 # latter drop as label is set to 'nan'. Defaults to []
 # swap_labels_to_column = []
 #
-# mask_header_cells - list of list of line/column pairs. Avoid to consider the
-# cells included in coordinates for labels construction.
+# mask_header_cells - list of list of line/column pairs. Avoid to conside
+# the cells included in coordinates for labels construction.
 # mask_header_cells = []
+#
+# data_in_first_column - string. In case first data column is merged with
+# chapter label column, name of the data column. Splitting is performed
+# after labels swapping and fixing.
+# data_in_first_column = ''
 
 [general]
 filename = 'BP_2025_ville.pdf'
-#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0', 'f0-sg', 'f1', 'f2']
-tables = ['f2']
+#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0', 'f0-sg', 'f1', 'f2', 'f3', 'f4', 'f5']
+tables = ['f5']
 
 [bgdi]
 pages = 17
@@ -99,6 +104,7 @@ pages = 19
 table_number = 2
 
 [vedi]
+verbose = true
 pages = 21
 header_lines = 5
 labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan'}
@@ -149,7 +155,6 @@ pages = 47
 header_lines = 2
 labels_to_fix = {2 = 'nan'}
 47.swap_labels_to_column = [[3, 1], [4, 5]]
-#data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[3, 'Chapitre'], 'RECETTES']]
 
 [f0-sg]
 pages = [48, 49, 50]
@@ -159,7 +164,6 @@ axis = 'columns'
 49.header_lines = 7
 49.table_number = 1
 49.mask_header_cells = [[[0, 5], [3, 5]]]
-49.data_to_fix = [[[0, 'Chapitre'], 'DEPENSES'], [[8, 'Chapitre'], 'RECETTES']]
 50.header_lines = 7
 50.table_number = 1
 50.swap_labels_to_column = [[2, 1], [7, 8]]
@@ -190,3 +194,62 @@ axis = 'columns'
 54.swap_labels_to_column = [[2, 1]]
 54.mask_header_cells = [[[0, 6], [3, 6]]]
 54.labels_to_fix = {6 = '282 Sport Scolaire', 7 = '283 Médecine scolaire', 8 = '284 Classes de découverte', 9 = "288 Autre service annexe de l'enseignement", 10 = '29 Sécurité', 11 = 'Total Du Chapitre'}
+
+[f3]
+pages = [55, 56, 57]
+axis = 'columns'
+55.header_lines = 8
+55.mask_header_cells = [[[0, 8], [2, 8]]]
+55.swap_labels_to_column = [[4, 5], [8, 9], [7, 8], [12, 13]]
+56.table_number = 1
+56.header_lines = 5
+56.mask_header_cells = [[[0, 6], [1, 6]]]
+56.swap_labels_to_column = [[2, 1], [4, 5]]
+56.labels_to_fix = {6 = '323 Piscines', 7 = '324 Centres de formation sportifs', 8 = '325 Autres équipements sportifs ou loisirs', 9 = 'Manifestations sportives'}
+56.rebuild_data = true
+56.data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
+57.table_number = 1
+57.header_lines = 7
+57.mask_header_cells = [[[0, 4], [1, 6]]]
+57.swap_labels_to_column = [[2, 1], [3, 4]]
+57.labels_to_fix = {5 = '332 Colonies de vacances', 6 = '338 Autres activités pour les jeunes', 7 = '341 Egalité entre les femmes et les hommes', 8 = '348 Autres', 9 = '39 Sécurité', 10 = 'Total Du Chapitre'}
+57.rebuild_data = true
+
+[f4]
+pages = [58, 59, 60]
+axis = 'columns'
+58.header_lines = 5
+58.mask_header_cells = [[[0, 8], [1, 8]]]
+58.swap_labels_to_column = [[2, 1], [3, 4], [5, 6], [11, 12]]
+58.labels_to_fix = {8 = 'nan'}
+58.data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
+59.table_number = 1
+59.header_lines = 7
+59.mask_header_cells = [[[0, 3], [3, 10]]]
+59.swap_labels_to_column = [[10, 11], [6, 8], [5, 6], [4, 5]]
+59.labels_to_fix = {7 = 'nan'}
+60.table_number = 1
+60.header_lines = 9
+60.swap_labels_to_column = [[2, 1], [8, 9], [6, 7], [5, 6]]
+60.mask_header_cells = [[[0, 6], [1, 6]], [[2, 4], [4, 4]]]
+
+[f5]
+pages = [61, 62, 63]
+axis = 'columns'
+61.header_lines = 7
+61.mask_header_cells = [[[0, 3], [1, 7]]]
+61.swap_labels_to_column = [[2, 1]]
+61.labels_to_fix = {7 = '513 Art Public', 8 = '514 Electrification'}
+61.rebuild_data = true
+62.table_number = 1
+62.header_lines = 8
+62.data_start_column = 1
+62.data_in_first_column = '52 Politique De La Ville'
+62.labels_to_fix = {3 = '551 Parc Privé De La Collectivité', 4 = '552 Aide Au Secteur Locatif', 5 = "553 Aide À L'Accession À La Propriété", 6 = "554 Aire d'Accueil Des Gens Du Voyage", 7 = '555 Logement Social'}
+62.rebuild_data = true
+62.chapter_number_mixed_with_name = true
+63.table_number = 1
+63.header_lines = 5
+63.mask_header_cells = [[[0, 5], [1, 5]]]
+63.swap_labels_to_column = [[8, 9], [5, 7], [4, 5]]
+63.labels_to_fix = {6 = 'nan'}
