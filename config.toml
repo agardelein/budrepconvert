@@ -77,15 +77,15 @@
 # the cells included in coordinates for labels construction.
 # mask_header_cells = []
 #
-# data_in_first_column - string. In case first data column is merged with
-# chapter label column, name of the data column. Splitting is performed
-# after labels swapping and fixing.
-# data_in_first_column = ''
+# data_in_first_column - list of strings. In case first data columns are
+# merged with chapter label column, name of the data column. Splitting is
+# performed after labels swapping and fixing.
+# data_in_first_column = []
 
 [general]
 filename = 'BP_2025_ville.pdf'
 #tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0', 'f0-sg', 'f1', 'f2', 'f3', 'f4', 'f5']
-tables = ['f5']
+tables = ['f7']
 
 [bgdi]
 pages = 17
@@ -104,7 +104,6 @@ pages = 19
 table_number = 2
 
 [vedi]
-verbose = true
 pages = 21
 header_lines = 5
 labels_to_fix = {1 = 'Titre Chapitre', 2 = 'nan'}
@@ -244,7 +243,7 @@ axis = 'columns'
 62.table_number = 1
 62.header_lines = 8
 62.data_start_column = 1
-62.data_in_first_column = '52 Politique De La Ville'
+62.data_in_first_column = ['52 Politique De La Ville']
 62.labels_to_fix = {3 = '551 Parc Privé De La Collectivité', 4 = '552 Aide Au Secteur Locatif', 5 = "553 Aide À L'Accession À La Propriété", 6 = "554 Aire d'Accueil Des Gens Du Voyage", 7 = '555 Logement Social'}
 62.rebuild_data = true
 62.chapter_number_mixed_with_name = true
@@ -253,3 +252,22 @@ axis = 'columns'
 63.mask_header_cells = [[[0, 5], [1, 5]]]
 63.swap_labels_to_column = [[8, 9], [5, 7], [4, 5]]
 63.labels_to_fix = {6 = 'nan'}
+
+[f7]
+pages = [64, 65, 66]
+axis = 'columns'
+64.header_lines = 10
+64.mask_header_cells = [[[0, 2], [3, 3]]]
+64.data_in_first_column = ['70 Services Communs', '71 Actions transversales']
+64.labels_to_fix = {0 = 'Libellé', 2 = '7211 Actions prévention et sensibilisation',  3 = '7212 collecte des déchets', 4 = '7213 Tri, valorisation, traitement des déchets', 5 = '7221 Actions prévention et sensibilisation', 6 = '7222 Action propreté urbaine et nettoiement'}
+64.rebuild_data = true
+64.chapter_number_mixed_with_name = true
+65.table_number = 1
+65.header_lines = 5
+65.mask_header_cells = [[[0, 4], [1, 4]]]
+65.rebuild_data = true
+65.swap_labels_to_column = [[5, 6], [7, 8], [9, 10]]
+66.table_number = 1
+66.header_lines = 7
+66.mask_header_cells = [[[0, 5], [1, 5]]]
+66.swap_labels_to_column = [[2, 1]]

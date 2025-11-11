@@ -41,6 +41,9 @@ class test_bg(unittest.TestCase):
             print(reference.dtypes)
             print(actual.index)
             print(reference.index)
+            # print([actual.index[i] == reference.index[i] for i in range(actual.shape[0])])
+            # print([actual.columns[i] == reference.columns[i] for i in range(actual.shape[1])])
+            # print(reference.compare(actual))
         return self.assertTrue(actual.equals(reference))
     
     def test_balance_generale_depenses_invest(self):
@@ -80,6 +83,9 @@ class test_bg(unittest.TestCase):
 
     def test_data_in_first_column(self):
         self._test_table('f5')
+
+    def test_data_in_first_columns(self):
+        self._test_table('f7', True)
 
 if __name__ == '__main__':
     unittest.main()

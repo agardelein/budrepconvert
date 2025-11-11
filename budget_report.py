@@ -22,7 +22,7 @@ class SinglePageTable:
         self.chapter_number_mixed_with_name = False
         self.mask_header_cells = []
         self.rebuild_data = {}
-        self.data_in_first_column = ''
+        self.data_in_first_column = []
         self.update_config(config)
         self.read_singlepage_table(filename, self.pages)
 
@@ -115,14 +115,23 @@ class SinglePageTable:
                 self.data.loc[c1[0]:c2[0],c1[1]:c2[1]] = np.nan
 
     def extract_data_from_first_column(self):
-        fun = lambda s: pd.Series(re.split(r'((\d{1,3} )*\d+,\d\d)', s)[:2])
         data = self.data.iloc[:, 0]
-        data = data.apply(fun)
-        data.iloc[:, 0] = data.iloc[:, 0].apply(str.strip)
-        data.columns = [self.data.columns[0], self.data_in_first_column]
+        data = data.apply(self.split_chapter_and_data)
+        data = data.map(str.strip)
+        column_names = [self.data.columns[0]]
+        column_names.extend(self.data_in_first_column)
+        data.columns = column_names
         self.data.drop(columns=self.data.columns[0], inplace=True, axis='columns')
         self.data = pd.concat([data, self.data], axis='columns')
 
+    def split_chapter_and_data(self, s):
+        elements = re.split(r'((\d{1,3} )*\d+,\d\d)+', s)
+        chapter = elements.pop(0)
+        values = list(filter(lambda x: isinstance(x, str) and ',' in x, elements))
+        res = [chapter]
+        res.extend(values)
+        return pd.Series(res)
+        
     def fix_labels(self, names):
         if 0 not in self.labels_to_fix.keys():
             self.labels_to_fix[0] = 'Chapitre'
@@ -130,6 +139,7 @@ class SinglePageTable:
             if label == 'nan':
                 names[int(i)] = np.nan
             else:
+#                names[int(i)] = label.title()
                 names[int(i)] = label
         return names
 
