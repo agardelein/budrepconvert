@@ -76,16 +76,16 @@ class test_bg(unittest.TestCase):
         self._test_table('pcvei')
 
     def test_multipage_header_mask_and_columns_split(self):
-        self._test_table('f0-sg')
+        self._test_table('f0i-sg')
 
     def test_multipage_header_mask_columns_split_multirows(self):
-        self._test_table('f2')
+        self._test_table('f2i')
 
     def test_data_in_first_column(self):
-        self._test_table('f5')
+        self._test_table('f5i')
 
     def test_data_in_first_columns(self):
-        self._test_table('f7', True)
+        self._test_table('f7i')
 
 if __name__ == '__main__':
     unittest.main()

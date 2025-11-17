@@ -84,8 +84,8 @@
 
 [general]
 filename = 'BP_2025_ville.pdf'
-#tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0', 'f0-sg', 'f1', 'f2', 'f3', 'f4', 'f5', 'f7']
-tables = ['f8']
+tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0i', 'f0i-sg', 'f1i', 'f2i', 'f3i', 'f4i', 'f5i', 'f7i', 'f8i', 'pcvef', 'f0f', 'f0f-sg', 'f1f', 'f2f', 'f3f', 'f4f', 'f5f', 'f6f', 'f7f', 'f8f']
+#tables = ['f8f']
 
 [bgdi]
 pages = 17
@@ -149,13 +149,13 @@ axis = 'columns'
 46.swap_labels_to_column = [[5, 6], [8, 9]]
 46.header_lines = 5
 
-[f0]
+[f0i]
 pages = 47
 header_lines = 2
 labels_to_fix = {2 = 'nan'}
 47.swap_labels_to_column = [[3, 1], [4, 5]]
 
-[f0-sg]
+[f0i-sg]
 pages = [48, 49, 50]
 axis = 'columns'
 48.header_lines = 9
@@ -169,12 +169,12 @@ axis = 'columns'
 50.mask_header_cells = [[[0, 5], [1, 5]]]
 50.rebuild_data = true
 
-[f1]
+[f1i]
 pages = 51
 header_lines = 5
 swap_labels_to_column = [[2, 1]]
 
-[f2]
+[f2i]
 pages = [52, 53, 54]
 axis = 'columns'
 52.header_lines = 9
@@ -194,7 +194,7 @@ axis = 'columns'
 54.mask_header_cells = [[[0, 6], [3, 6]]]
 54.labels_to_fix = {6 = '282 Sport Scolaire', 7 = '283 Médecine scolaire', 8 = '284 Classes de découverte', 9 = "288 Autre service annexe de l'enseignement", 10 = '29 Sécurité', 11 = 'Total Du Chapitre'}
 
-[f3]
+[f3i]
 pages = [55, 56, 57]
 axis = 'columns'
 55.header_lines = 8
@@ -204,7 +204,7 @@ axis = 'columns'
 56.header_lines = 5
 56.mask_header_cells = [[[0, 6], [1, 6]]]
 56.swap_labels_to_column = [[2, 1], [4, 5]]
-56.labels_to_fix = {6 = '323 Piscines', 7 = '324 Centres de formation sportifs', 8 = '325 Autres équipements sportifs ou loisirs', 9 = 'Manifestations sportives'}
+56.labels_to_fix = {6 = '323 Piscines', 7 = '324 Centres de formation sportifs', 8 = '325 Autres équipements sportifs ou loisirs', 9 = '326 Manifestations sportives'}
 56.rebuild_data = true
 56.data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
 57.table_number = 1
@@ -214,7 +214,7 @@ axis = 'columns'
 57.labels_to_fix = {5 = '332 Colonies de vacances', 6 = '338 Autres activités pour les jeunes', 7 = '341 Egalité entre les femmes et les hommes', 8 = '348 Autres', 9 = '39 Sécurité', 10 = 'Total Du Chapitre'}
 57.rebuild_data = true
 
-[f4]
+[f4i]
 pages = [58, 59, 60]
 axis = 'columns'
 58.header_lines = 5
@@ -232,7 +232,7 @@ axis = 'columns'
 60.swap_labels_to_column = [[2, 1], [8, 9], [6, 7], [5, 6]]
 60.mask_header_cells = [[[0, 6], [1, 6]], [[2, 4], [4, 4]]]
 
-[f5]
+[f5i]
 pages = [61, 62, 63]
 axis = 'columns'
 61.header_lines = 7
@@ -253,7 +253,7 @@ axis = 'columns'
 63.swap_labels_to_column = [[8, 9], [5, 7], [4, 5]]
 63.labels_to_fix = {6 = 'nan'}
 
-[f7]
+[f7i]
 pages = [64, 65, 66]
 axis = 'columns'
 64.header_lines = 10
@@ -272,8 +272,7 @@ axis = 'columns'
 66.mask_header_cells = [[[0, 5], [1, 5]]]
 66.swap_labels_to_column = [[2, 1]]
 
-[f8]
-verbose = true
+[f8i]
 pages = [67, 68, 69, 70]
 axis = 'columns'
 67.header_lines = 5
@@ -293,3 +292,177 @@ axis = 'columns'
 70.header_lines = 7
 70.mask_header_cells = [[[0, 5], [1, 5]]]
 70.swap_labels_to_column = [[2, 1], [10, 11]]
+
+[pcvef]
+pages = [71, 72]
+axis = 'columns'
+71.header_lines = 7
+71.swap_labels_to_column = [[9, 10]]
+72.table_number = 1
+72.header_lines = 5
+
+[f0f]
+pages = 73
+data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[11, 'Libellé'], 'RECETTES']]
+swap_labels_to_column = [[3, 1], [4, 5]]
+labels_to_fix = {2 = 'nan'}
+header_lines = 2
+
+[f0f-sg]
+pages = [74, [76, 77], 78]
+axis = 'columns'
+74.header_lines = 9
+74.mask_header_cells = [[[0, 5], [1, 5]]]
+74.labels_to_fix = {5 = '023 Fêtes et cérémonies', 6 = "024 Aide aux associations", 7 = '025 Cimetières et pompes funèbres', 8 = "026 Administration générale de l'état", 9 = "028 Autres moyens généraux"}
+74.rebuild_data = true
+76.table_number = 1
+76.header_lines = 7
+76.mask_header_cells = [[[0, 5], [3, 5]]]
+77.table_number = 0
+77.header_lines = 7
+77.mask_header_cells = [[[0, 5], [3, 5]]]
+78.header_lines = 5
+78.table_number = 1
+78.mask_header_cells = [[[0, 5], [1, 5]]]
+78.labels_to_fix = {5 = '043 Aides européennes', 6 = '044 Aide publique au développement'}
+78.rebuild_data = true
+78.swap_labels_to_column = [[2, 1]]
+
+[f1f]
+pages = 80
+header_lines = 5
+swap_labels_to_column = [[2, 1]]
+
+[f2f]
+pages = [81, [82, 83], 84]
+axis = 'columns'
+81.table_number = 1
+81.header_lines = 9
+81.mask_header_cells = [[[0, 3], [2, 8]]]
+81.swap_labels_to_column = [[2, 1]]
+81.labels_to_fix = {5 = '212 Ecoles primaires', 6 = '213 Classes regroupées', 8 = '222 Lycées publics', 9 = '223 Lycées privés'}
+81.rebuild_data = true
+82.table_number = 1
+82.header_lines = 9
+82.mask_header_cells = [[[0, 7], [4, 10]]]
+82.labels_to_fix = {7 = '2561 Missions statutaires et réglementaires', 8 = '2562 Développement des compétences', 9 = '2563 Evolution et transition professionnelle', 10 = '2564 Organisation des activités pédagogiques', 11 = '2565 Autres', 12 = '2571 Concours', 13 = '2572 Missions administratives', 14 = '258 Autres'}
+82.rebuild_data = true
+83.table_number = 0
+83.header_lines = 9
+83.mask_header_cells = [[[0, 7], [4, 10]]]
+83.labels_to_fix = {7 = '2561 Missions statutaires et réglementaires', 8 = '2562 Développement des compétences', 9 = '2563 Evolution et transition professionnelle', 10 = '2564 Organisation des activités pédagogiques', 11 = '2565 Autres', 12 = '2571 Concours', 13 = '2572 Missions administratives', 14 = '258 Autres'}
+83.rebuild_data = true
+84.table_number = 1
+84.header_lines = 7
+84.mask_header_cells = [[[0, 6], [1, 6]]]
+84.labels_to_fix = {6 = '282 Sport Scolaire', 7 = '283 Médecine scolaire', 8 = '284 Classes de découverte', 9 = "288 Autre service annexe de l'enseignement", 10 = '29 Sécurité', 11 = 'Total Du Chapitre'}
+84.rebuild_data = true
+84.swap_labels_to_column = [[2, 1]]
+
+[f3f]
+axis = 'columns'
+pages = [[85, 86], 87, 88]
+85.header_lines = 8
+85.mask_header_cells = [[[0, 8], [2, 8]]]
+85.swap_labels_to_column = [[8, 9], [7, 8], [12, 13]]
+85.labels_to_fix = {5 = 'nan'}
+86.table_number = 0
+86.header_lines = 8
+86.mask_header_cells = [[[0, 8], [2, 8]]]
+86.swap_labels_to_column = [[8, 9], [7, 8], [12, 13]]
+86.labels_to_fix = {5 = 'nan'}
+87.table_number = 1
+87.header_lines = 5
+87.labels_to_fix = {5 = '323 Piscines', 6 = '324 Centres de formation sportifs', 7 = '325 Autres équipements sportifs ou loisirs', 8 = '326 Manifestations sportives'}
+87.rebuild_data = true
+87.swap_labels_to_column = [[3, 4]]
+87.mask_header_cells = [[[0, 5], [1, 5]]]
+88.table_number = 1
+88.header_lines = 7
+88.labels_to_fix = {5 = '332 Colonies de vacances', 6 = '338 Autres activités pour les jeunes', 7 = '341 Egalité entre les femmes et les hommes', 8 = '348 Autres', 9 = '39 Sécurité', 10 = 'Total Du Chapitre'}
+88.rebuild_data = true
+88.swap_labels_to_column = [[2, 1], [3, 4], [8, 9]]
+
+[f4f]
+pages = [89, 90, 91]
+axis = 'columns'
+89.header_lines = 5
+89.mask_header_cells = [[[0, 5], [1, 5]]]
+89.swap_labels_to_column = [[4, 5], [8, 9]]
+90.table_number = 1
+90.header_lines = 10
+90.labels_to_fix = {0 = "Libellé", 1 = "420 Services communs", 2 = "4211 Actions en faveur de la maternité", 3 = "4212 Aides à la famille", 4 = "4213 Aides sociales à l'enfance", 5 = "4214 Adolescence", 6 = "4221 Crèches et garderies", 7 = "4222 Multi accueil", 8 = "4228 Autres actions pour la petite enfance"}
+90.data_to_fix = [[[0, 'Libellé'], 'DEPENSES'], [[0, '420 Services communs'], '1 319 200,00 0,00 0,00'], [[15, 'Libellé'], "Charges intervent° cpt prop. - Subvent°"], [[15, '420 Services communs'], '1 319 200,00 0,00 0,00']]
+90.rebuild_data = true
+90.chapter_number_mixed_with_name = true
+91.table_number = 1
+91.header_lines = 9
+91.mask_header_cells = [[[0, 6], [1, 6]], [[2, 4], [4, 4]]]
+91.swap_labels_to_column = [[2, 1], [8, 9], [6, 7], [5, 6]]
+
+[f5f]
+pages = [92, 93, 94]
+axis = 'columns'
+92.header_lines = 6
+92.swap_labels_to_column = [[2, 1]]
+92.mask_header_cells = [[[0, 3], [1, 7]]]
+92.labels_to_fix = {7 = "513 Art public", 8 = '514 Electrification'}
+92.rebuild_data = true
+93.table_number = 1
+93.header_lines = 5
+93.mask_header_cells = [[[0, 7], [1, 7]]]
+94.table_number = 1
+94.header_lines = 5
+94.mask_header_cells = [[[0, 5], [1, 5]]]
+94.swap_labels_to_column = [[8, 9], [5, 7], [4, 5]]
+94.labels_to_fix = {6 = 'nan'}
+
+[f6f]
+pages = [95, 96]
+axis = 'columns'
+95.header_lines = 9
+95.mask_header_cells = [[[0, 5], [5, 6]]]
+95.swap_labels_to_column = [[8, 9]]
+95.labels_to_fix = {7 = "632 Industrie, commerce et artisanat"}
+96.table_number = 1
+96.header_lines = 4
+96.swap_labels_to_column = [[2, 1], [8, 9], [6, 7]]
+
+[f7f]
+pages = [97, 98, 99]
+axis = 'columns'
+97.header_lines = 10
+97.data_in_first_column = ['70 Services Communs', '71 Actions transversales']
+97.labels_to_fix = {0 = 'Libellé', 2 = '7211 Actions prévention et sensibilisation',  3 = '7212 collecte des déchets', 4 = '7213 Tri, valorisation, traitement des déchets', 5 = '7221 Actions prévention et sensibilisation', 6 = '7222 Action propreté urbaine et nettoiement'}
+97.chapter_number_mixed_with_name = true
+97.rebuild_data = true
+98.table_number = 1
+98.header_lines = 5
+98.mask_header_cells = [[[0, 4], [1, 4]]]
+98.swap_labels_to_column = [[5, 6], [7, 8], [9, 10]]
+98.rebuild_data = true
+99.table_number = 1
+99.header_lines = 7
+99.mask_header_cells = [[[0, 5], [1, 5]]]
+99.swap_labels_to_column = [[2, 1]]
+
+[f8f]
+pages = [100, 101, 102, 103]
+axis = 'columns'
+100.header_lines = 8
+100.data_in_first_column = ['80 Services communs']
+100.labels_to_fix = {2 = "820 Services communs", 3 = "821 Transports sur route", 4 = "822 Transport ferroviaire", 5 = "823 Transport fluvial", 6 = "824 Transport maritime", 7 = "825 Transport aérien", 8 = "826 Autres transports"}
+100.rebuild_data = true
+100.chapter_number_mixed_with_name = true
+101.table_number = 1
+101.header_lines = 7
+101.mask_header_cells = [[[0, 7], [2, 7]]]
+101.swap_labels_to_column = [[3, 4], [5, 6], [8, 9], [10, 11]]
+102.table_number = 1
+102.header_lines = 5
+102.mask_header_cells = [[[0, 6], [1, 6]]]
+102.swap_labels_to_column = [[5, 6]]
+103.table_number = 1
+103.header_lines = 7
+103.mask_header_cells = [[[0, 5], [1, 5]]]
+103.swap_labels_to_column = [[2, 1], [10, 11]]

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 class SinglePageTable:
-    def __init__(self, filename, config):
+    def __init__(self, filename, config, only_read=False):
         self.data = None
         self.labels_to_fix = {}
         self.data_to_fix = {}
@@ -24,7 +24,7 @@ class SinglePageTable:
         self.rebuild_data = {}
         self.data_in_first_column = []
         self.update_config(config)
-        self.read_singlepage_table(filename, self.pages)
+        self.read_singlepage_table(filename, self.pages, only_read)
 
     def update_config(self, config):
         self.header_lines = config.get('header_lines', self.header_lines)
@@ -48,12 +48,14 @@ class SinglePageTable:
         self.rebuild_data = config.get('rebuild_data', self.rebuild_data)
         self.data_in_first_column = config.get('data_in_first_column', self.data_in_first_column)
 
-    def read_singlepage_table(self, filename, page):
+    def read_singlepage_table(self, filename, page, only_read):
         self.update_config(self.config.get(str(page), {}))
         if self.chapter_number_mixed_with_name:
             self.initial_chapter_name_column = 0
         self.read_data(filename, page, self.table_number)
         self.print_if_verbose('*-', f'After read_data Table {self.table_number}')
+        if only_read:
+            return
 
         self.convert_header_to_labels()
         self.print_if_verbose('*/', 'After convert_header_to_labels')
@@ -223,6 +225,7 @@ class SinglePageTable:
             v = np.nan if v == 'nan' else v
             self.data.loc[k] = v
         if self.rebuild_data:
+            self.print_if_verbose('_/', 'Before rebuild_line_data')
             self.rebuild_line_data()
 
     def rebuild_line_data(self):
@@ -318,21 +321,21 @@ class SinglePageTable:
             print(self.data.dtypes)
 
 class MultiPageTable:
-    def __init__(self, filename, config):
+    def __init__(self, filename, config, only_read):
         self.data = None
         self.config = config
         self.pages = None
         self.axis = 'index'
         self.verbose = False
         self.update_config(self.config)
-        self.read_multipage_table(filename, self.pages, self.axis)
+        self.read_multipage_table(filename, self.pages, self.axis, only_read)
 
     def update_config(self, config):
         self.pages = config.get('pages', self.pages)
         self.axis = config.get('axis', self.axis)
         self.verbose = config.get('verbose', self.verbose)
 
-    def read_multipage_table(self, filename, pages, axis):
+    def read_multipage_table(self, filename, pages, axis, only_read):
         data = None
         for page in pages:
             if data is not None:
@@ -341,9 +344,9 @@ class MultiPageTable:
             config['pages'] = page
             if isinstance(page, list):
                 config['axis'] = 'index'
-                tab = MultiPageTable(filename, config)
+                tab = MultiPageTable(filename, config, only_read)
             else:
-                tab = SinglePageTable(filename, config)
+                tab = SinglePageTable(filename, config, only_read)
             if data is None:
                 data = tab.data
             else:
@@ -353,6 +356,8 @@ class MultiPageTable:
                     data = pd.concat([data, tab.data.iloc[:,1:]],
                                      axis=axis)
         self.data = data
+        if only_read:
+            return
         self.print_if_verbose('/-', 'After concat')
 
     def add_to_page_config(self, page, key, value):
@@ -367,10 +372,10 @@ class MultiPageTable:
             print(self.data)
             print(self.data.dtypes)
 
-def read_from_config(filename, ct):
+def read_from_config(filename, ct, only_read=False):
     pages = ct['pages']
     if isinstance(pages, int):
-        data = SinglePageTable(filename, ct).data
+        data = SinglePageTable(filename, ct, only_read).data
     else:
-        data = MultiPageTable(filename, ct).data
+        data = MultiPageTable(filename, ct, only_read).data
     return data
