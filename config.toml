@@ -85,7 +85,7 @@
 [general]
 filename = 'BP_2025_ville.pdf'
 tables = ['bgdi', 'bgdf', 'bgri', 'bgrf', 'vedi', 'veri', 'dari', 'dadi', 'dadf', 'darf', 'pcvei', 'f0i', 'f0i-sg', 'f1i', 'f2i', 'f3i', 'f4i', 'f5i', 'f7i', 'f8i', 'pcvef', 'f0f', 'f0f-sg', 'f1f', 'f2f', 'f3f', 'f4f', 'f5f', 'f6f', 'f7f', 'f8f']
-#tables = ['f8f']
+# tables = ['bgdf']
 
 [bgdi]
 pages = 17

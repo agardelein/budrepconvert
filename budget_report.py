@@ -78,7 +78,7 @@ class SinglePageTable:
         df = tabula.read_pdf(filename,
                              pages=page,
                              stream=True,
-                             pandas_options={'header': None},
+                             pandas_options={'header': None, 'dtype':str},
                              )
         self.data = df[table_number]
 
