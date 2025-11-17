@@ -31,19 +31,19 @@ class SinglePageTable:
         self.data_start_column = config.get('data_start_column',
                                             self.data_start_column)
         self.initial_chapter_name_column = config.get('initial_chapter_name_column', self.initial_chapter_name_column)
-        self.data_to_fix = config.get('data_to_fix', self.data_to_fix)
-        self.labels_to_fix = config.get('labels_to_fix',
+        self.data_to_fix = config.get('data', self.data_to_fix)
+        self.labels_to_fix = config.get('labels',
                                         self.labels_to_fix)
         if isinstance(self.data_to_fix, list):
             self.data_to_fix = {(k[0], k[1]): v for k, v in self.data_to_fix}
-        self.swap_labels_to_column = config.get('swap_labels_to_column',
+        self.swap_labels_to_column = config.get('move_labels',
                                                 self.swap_labels_to_column)
         self.table_number = config.get('table_number', self.table_number)
         self.pages = config.get('pages', self.pages)
         self.axis = config.get('axis', self.axis)
         self.verbose = config.get('verbose', self.verbose)
         self.chapter_number_mixed_with_name = config.get('chapter_number_mixed_with_name',self.chapter_number_mixed_with_name)
-        self.mask_header_cells = config.get('mask_header_cells',
+        self.mask_header_cells = config.get('header_mask',
                                             self.mask_header_cells)
         self.rebuild_data = config.get('rebuild_data', self.rebuild_data)
         self.data_in_first_column = config.get('data_in_first_column', self.data_in_first_column)
