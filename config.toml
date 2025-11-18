@@ -52,6 +52,8 @@
 # chapter number/name demixing (if any).
 # If the column 0 is not specified, it is replaced by 'Chapitre'.
 # 'nan' can be specified as label to drop column if useless.
+# Create columns if the list size if bigger than the actual number of
+# columns.
 # labels = {}
 #
 # move_labels - list of list of source/dest pairs. Move
@@ -73,6 +75,10 @@
 # merged with chapter label column, name of the data column. Splitting is
 # performed after labels swapping and fixing.
 # data_in_first_column = []
+#
+# rebuild_data - boolean. In case of multiple columns merged in a single
+# one, shuffle the values of the entire row accross the columns.
+# reuild_data = false
 #
 # initial_chapter_name_column - The column of the chapter name,
 # counted right after read, before header, index and data processing.
