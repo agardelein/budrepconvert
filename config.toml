@@ -161,6 +161,7 @@ pages = 47
 header_lines = 2
 labels = {2 = 'nan'}
 47.move_labels = [[3, 1], [4, 5]]
+47.data = [[[0, 'Libellé'], 'DEPENSES'], [[3, 'Libellé'], 'RECETTES']]
 
 [f0i-sg]
 pages = [48, 49, 50]
